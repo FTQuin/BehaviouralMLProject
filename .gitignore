@@ -1,2 +1,4 @@
 /First NN/test/
 /First NN/train/
+/First NN/processed_data_None.npz
+/First NN/processed_data_softmax.npz
