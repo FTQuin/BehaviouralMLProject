@@ -2,7 +2,7 @@ import math
 import tensorflow as tf
 
 
-def downsize_frame(frame, target_size):
+def downsize_frame(frame, target_size=256):
     # takes in an image and a target for the long side of the image
     # returns and image who's longest size is target size
 
@@ -86,16 +86,19 @@ def combine_feature(joints, bones):
 
 # TODO: complete rest of functions
 def get_features_from_image(image):
+    # takes in an image [w, h, c]
+    # returns feature vector 1x6x17x3
+
     # add extra dim to image
     image = tf.expand_dims(image, axis=0)
     # downsize image
-    downsized_image = downsize_frame(image, 256)
+    downsized_image = downsize_frame(image)
     # run through movenet
     raw_joints = movenet(downsized_image)
     # convert joints to more readable
     joints, boxes, confidence = reorganize_movenet_result(raw_joints)
 
-    return joints
+    return tf.keras.layers.Flatten()(joints)
 
 
 if __name__ == '__main__':

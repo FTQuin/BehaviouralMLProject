@@ -20,7 +20,6 @@ NUM_FEATURES = 2048
 ## Data preparation
 """
 
-all_vids_df = pd.DataFrame(columns=['video_name', 'tag'])
 
 train_df = pd.read_csv("train.csv")
 
@@ -74,20 +73,25 @@ def build_feature_extractor():
 
 feature_extractor = build_feature_extractor()
 
+x = [(os.path.split(a)[1], files) for a, b, files in os.walk('../TFlite-NN/UCF-101')]
+y = [[(l[0], i) for i in l[1]] for l in x[1:]]
+
+all_vids_df = pd.DataFrame()
+for i in y:
+    all_vids_df = all_vids_df.append(i, ignore_index=True)
+all_vids_df = all_vids_df.rename({0: 'tag', 1: 'video_name'}, axis=1)
+
 label_processor = keras.layers.StringLookup(
-    num_oov_indices=0, vocabulary=np.unique(train_df["tag"])
+    num_oov_indices=0, vocabulary=np.unique(all_vids_df["tag"])
 )
 print(label_processor.get_vocabulary())
 
 def prepare_all_videos(root_dir):
-    x = [(os.path.split(a)[1], files) for a, b, files in os.walk('../../Python Projects/UCF-101')]
-    y = [list(zip(i[0] * len(i[1]), i[1])) for i in x]
 
-    num_samples = sum(len(files) for a, b, files in os.walk('../../Python Projects/UCF-101'))
-    video_paths = df["video_name"].values.tolist()
-    labels = df["tag"].values
+    num_samples = sum(len(files) for a, b, files in os.walk(root_dir))
+    video_paths = all_vids_df["video_name"].values.tolist()
+    labels = all_vids_df["tag"].values
     labels = label_processor(labels[..., None]).numpy()
-
     # `frame_masks` and `frame_features` are what we will feed to our sequence model.
     # `frame_masks` will contain a bunch of booleans denoting if a timestep is
     # masked with padding or not.
@@ -97,7 +101,8 @@ def prepare_all_videos(root_dir):
     )
 
     # For each video.
-    for idx, path in enumerate(video_paths):
+    for idx, path in enumerate(all_vids_df.values):
+        path = os.path.join(path[0], path[1])
         # Gather all its frames and add a batch dimension.
         frames = load_video(os.path.join(root_dir, path))
         frames = frames[None, ...]
@@ -126,3 +131,6 @@ def prepare_all_videos(root_dir):
         frame_masks[idx,] = temp_frame_mask.squeeze()
 
     return (frame_features, frame_masks), labels
+
+
+prepare_all_videos('../TFlite-NN/UCF-101')
