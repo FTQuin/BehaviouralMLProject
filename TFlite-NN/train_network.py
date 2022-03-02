@@ -135,7 +135,7 @@ def get_sequence_model():
 
 # Utility for running experiments.
 def run_experiment():
-    filepath = "TFlite-NN/tmp/video_classifier"
+    filepath = "tmp/video_classifier"
     checkpoint = keras.callbacks.ModelCheckpoint(
         filepath, save_weights_only=True, save_best_only=False, verbose=1
     )

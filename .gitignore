@@ -2,3 +2,6 @@
 /First NN/train/
 /First NN/processed_data_None.npz
 /First NN/processed_data_softmax.npz
+/TFlite-NN/UCF-101/
+/TFlite-NN/logs/
+/TFlite-NN/tmp/
