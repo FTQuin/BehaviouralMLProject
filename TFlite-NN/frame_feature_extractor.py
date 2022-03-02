@@ -67,6 +67,7 @@ def reorganize_movenet_result(movenet_result):
     # split joints
     joints = tf.split(joints[0], num_or_size_splits=17, axis=1)
     joints = tf.convert_to_tensor(joints, dtype=tf.float32)
+    joints = tf.transpose(joints, perm=[1, 0, 2])
     joints = tf.expand_dims(joints, axis=0)
 
     return joints, boxes, confidence
@@ -98,7 +99,7 @@ def get_features_from_image(image):
     # convert joints to more readable
     joints, boxes, confidence = reorganize_movenet_result(raw_joints)
 
-    return tf.keras.layers.Flatten()(joints)
+    return joints
 
 
 if __name__ == '__main__':
@@ -116,5 +117,7 @@ if __name__ == '__main__':
 
     # convert joints to more readable
     joints, boxes, confidence = reorganize_movenet_result(raw_joints)
+
+    print(joints)
 
 

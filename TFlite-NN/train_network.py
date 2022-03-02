@@ -10,7 +10,7 @@ import frame_feature_extractor as ffe
 
 IMG_SIZE = 256
 
-MAX_SEQ_LENGTH = 250
+MAX_SEQ_LENGTH = 1
 NUM_FEATURES = 17*6*3
 EPOCHS = 100
 
@@ -84,9 +84,8 @@ def prepare_all_videos(root_dir):
             video_length = batch.shape[0]
             length = min(MAX_SEQ_LENGTH, video_length)
             for j in range(length):
-                temp_frame_features[i, j, :] = ffe.get_features_from_image(
-                    batch[j, :]
-                )
+                features = ffe.get_features_from_image(batch[j, :])
+                temp_frame_features[i, j, :] = tf.keras.layers.Flatten()(features)
             temp_frame_mask[i, :length] = 1  # 1 = not masked, 0 = masked
 
         frame_features[idx,] = temp_frame_features.squeeze()
@@ -95,16 +94,16 @@ def prepare_all_videos(root_dir):
     return (frame_features, frame_masks), labels
 
 
-# # # prepare data
-# # features_masks, labels = prepare_all_videos("UCF-101")
-# # features = features_masks[0]
+# # prepare data
+# features_masks, labels = prepare_all_videos("UCF-101")
+# features = features_masks[0]
 #
 # # save data
-# np.savez("processed_data", features=features, labels=labels)
+# np.savez("processed_data_1", features=features, labels=labels)
 # print("dumped")
 
 # load data
-features, labels= [item[1] for item in np.load("processed_data.npz").items()]
+features, labels = [item[1] for item in np.load("processed_data.npz").items()]
 print("loaded")
 
 
@@ -135,7 +134,7 @@ def get_sequence_model():
 
 # Utility for running experiments.
 def run_experiment():
-    filepath = "tmp/video_classifier"
+    filepath = "tmp/video_classifier_1"
     checkpoint = keras.callbacks.ModelCheckpoint(
         filepath, save_weights_only=True, save_best_only=False, verbose=1
     )
@@ -153,12 +152,20 @@ def run_experiment():
     )
 
     seq_model.load_weights(filepath)
-    # _, accuracy = seq_model.evaluate([test_data[0], test_data[1]], test_labels)
-    # print(f"Test accuracy: {round(accuracy * 100, 2)}%")
 
     return history, seq_model
 
 
-_, sequence_model = run_experiment()
+def get_trained_sequence_model(filepath="tmp/video_classifier"):
+    seq_model = get_sequence_model()
+    seq_model.load_weights(filepath)
+    return seq_model
+
+
+if __name__ == '__main__':
+    _, sequence_model = run_experiment()
+
+
+
 
 print('\n\n******** END ********')
