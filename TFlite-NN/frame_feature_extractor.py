@@ -2,9 +2,10 @@ import math
 import tensorflow as tf
 
 
+# downsizes an image to target_size on its longest axis
 def downsize_frame(frame, target_size=256):
-    # takes in an image and a target for the long side of the image
-    # returns and image who's longest size is target size
+    # takes in an image [1xhxwxc] and a target for the long side of the image
+    # returns and image [1xhxwxc] who's longest size is target size
 
     _, height, width, _ = frame.shape
     if height > width:
@@ -25,11 +26,11 @@ def downsize_frame(frame, target_size=256):
 
 
 # init movenet
-interpreter = tf.lite.Interpreter(model_path='lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
+interpreter = tf.lite.Interpreter(model_path='movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
 interpreter.allocate_tensors()
 def movenet(scaled_frame_tensor):
-    # takes in an image tensor
-    # returns as 1x6x56 tensor of features
+    # takes in an image [1xhxwxc] tensor
+    # returns as [1x6x56] tensor of features
 
     # TF Lite format expects tensor type of uint8.
     input_image = tf.cast(scaled_frame_tensor, dtype=tf.uint8)
@@ -54,12 +55,13 @@ def movenet(scaled_frame_tensor):
     return keypoints_with_scores
 
 
+# changes movenet data to a more usable format
 def reorganize_movenet_result(movenet_result):
-    # takes in 1x6x56 tensor
+    # takes in [1x6x56] tensor
     # returns
-    # 1x6x17x3 tensor joints,
-    # 1x6x4 tensor bounding_boxes,
-    # 1x6x1 people_mask
+    # [1x6x17x3] tensor joints,
+    # [1x6x4] tensor bounding_boxes,
+    # [1x6x1] people_mask
 
     # split raw tensor
     joints, boxes, confidence = tf.split(movenet_result, [56-4-1, 4, 1], 2)
@@ -73,19 +75,36 @@ def reorganize_movenet_result(movenet_result):
     return joints, boxes, confidence
 
 
-def remove_unusable_joints(movenet_result):
+# TODO: this
+# creates mask of very uncertain joints
+# combines the head joints
+def remove_unusable_joints(joints):
+    # takes in [1x6x17x3] tensor of joints
+    # returns
+    # [1x6x13x3] tensor of joints,
+    # [1x6x13] joint_mask
     pass
 
 
+# TODO: this
+# uses joints to create features from their connections (bones)
 def create_bone_feature(joints):
+    # takes in [1x6x17x3] tensor of joints
+    # returns
+    # [1x6x14x2] tensor of bones,
+    # [1x6x14] bone_mask
     pass
 
 
+# TODO: this
 def combine_feature(joints, bones):
+    # takes in [1x6x13x3] tensor of joints
+    # takes in [1x6x14x2] tensor of bones
+    # returns
+    # [1x6x67] feature tensor [(13*3)+14*2)]
     pass
 
 
-# TODO: complete rest of functions
 def get_features_from_image(image):
     # takes in an image [w, h, c]
     # returns feature vector 1x6x17x3
@@ -104,7 +123,7 @@ def get_features_from_image(image):
 
 if __name__ == '__main__':
     # get test image
-    image_path = 'image.jpeg'
+    image_path = 'images/image.jpeg'
     image = tf.io.read_file(image_path)
     image = tf.compat.v2.image.decode_jpeg(image)
     image = tf.expand_dims(image, axis=0)
@@ -115,7 +134,7 @@ if __name__ == '__main__':
     # run through movenet
     raw_joints = movenet(downsized_image)
 
-    # convert joints to more readable
+    # convert joints to more usable format
     joints, boxes, confidence = reorganize_movenet_result(raw_joints)
 
     print(joints)

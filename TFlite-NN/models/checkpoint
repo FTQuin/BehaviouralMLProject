@@ -1,0 +1,2 @@
+model_checkpoint_path: "jump_skate_1frame"
+all_model_checkpoint_paths: "jump_skate_1frame"
