@@ -10,12 +10,12 @@ import frame_feature_extractor as ffe
 import prepare_data as pd
 
 NUM_FEATURES = 17*6*3
-SEQ_LENGTH = 1
+SEQ_LENGTH = 20
 
-EPOCHS = 4
+EPOCHS = 10
 
-MODEL_FILE = 'models/jump_skate_1frame_4epochs'
-FEATURE_FILE = 'processed_features/processed_data_1.npz'
+MODEL_FILE = 'models/jump_skate_20frame_10epochs'
+FEATURE_FILE = 'processed_features/processed_data_20.npz'
 
 
 # load data from feature file
@@ -26,8 +26,10 @@ def load_features(feature_path=FEATURE_FILE):
 
 
 # Utility for our sequence model.
-def create_sequence_model():
-    class_vocab = label_processor.get_vocabulary()
+def create_sequence_model(num_labels=2):
+    # if label_processor is not None:
+    #     class_vocab = label_processor.get_vocabulary()
+    #     num_labels = len(class_vocab)
 
     frame_features_input = keras.Input((SEQ_LENGTH, NUM_FEATURES))
 
@@ -40,7 +42,7 @@ def create_sequence_model():
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(16, activation='relu')(x)
     x = keras.layers.Dense(8, activation='relu')(x)
-    output = keras.layers.Dense(len(class_vocab), activation='softmax')(x)
+    output = keras.layers.Dense(num_labels, activation='softmax')(x)
 
     rnn_model = keras.Model([frame_features_input], output)
 
@@ -71,8 +73,8 @@ def train_model():
 
 
 # Get a trained model from a file
-def get_trained_sequence_model(filepath=MODEL_FILE):
-    seq_model = create_sequence_model()
+def get_trained_sequence_model(filepath=MODEL_FILE, num_labels=2):
+    seq_model = create_sequence_model(num_labels)
     seq_model.load_weights(filepath)
     return seq_model
 
