@@ -1,2 +1,2 @@
-model_checkpoint_path: "jump_skate_20frame_10epochs"
-all_model_checkpoint_paths: "jump_skate_20frame_10epochs"
+model_checkpoint_path: "9Sports_100Frame_25epochs"
+all_model_checkpoint_paths: "9Sports_100Frame_25epochs"

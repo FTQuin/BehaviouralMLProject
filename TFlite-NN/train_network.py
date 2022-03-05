@@ -1,25 +1,35 @@
+"""
+:Date: 2022-02-28
+:Version: 1.0
+:Author: - Quin Adam
+:Description: Extracts features from a frame
+"""
 import datetime
-import os
 
-import cv2
-import pandas as pd
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
-import frame_feature_extractor as ffe
-import prepare_data as pd
 
 NUM_FEATURES = 17*6*3
 SEQ_LENGTH = 20
 
-EPOCHS = 10
+EPOCHS = 25
 
-MODEL_FILE = 'models/jump_skate_20frame_10epochs'
-FEATURE_FILE = 'processed_features/processed_data_20.npz'
+MODEL_FILE = 'models/9Sports_100Frame_25epochs'
+FEATURE_FILE = 'processed_features/processed_data_9Sports_100Frame.npz'
 
 
 # load data from feature file
 def load_features(feature_path=FEATURE_FILE):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     features, labels, label_names = [item[1] for item in np.load(feature_path).items()]
     print("\nLoaded Features")
     return features, labels, label_names
@@ -27,6 +37,15 @@ def load_features(feature_path=FEATURE_FILE):
 
 # Utility for our sequence model.
 def create_sequence_model(num_labels=2):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # if label_processor is not None:
     #     class_vocab = label_processor.get_vocabulary()
     #     num_labels = len(class_vocab)
@@ -54,6 +73,15 @@ def create_sequence_model(num_labels=2):
 
 # Utility for running experiments.
 def train_model():
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     checkpoint = keras.callbacks.ModelCheckpoint(
         MODEL_FILE, save_weights_only=True, save_best_only=False, verbose=1
     )
@@ -61,7 +89,7 @@ def train_model():
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-    seq_model = create_sequence_model()
+    seq_model = create_sequence_model(len(np.unique(label_names)))
     seq_model.fit(
         features,
         labels,
@@ -74,6 +102,15 @@ def train_model():
 
 # Get a trained model from a file
 def get_trained_sequence_model(filepath=MODEL_FILE, num_labels=2):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     seq_model = create_sequence_model(num_labels)
     seq_model.load_weights(filepath)
     return seq_model

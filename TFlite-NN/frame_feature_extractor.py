@@ -1,13 +1,25 @@
+"""
+:Date: 2022-02-28
+:Version: 1.0
+:Author: - Quin Adam
+:Description: Extracts features from a frame
+"""
 import math
 import tensorflow as tf
 
 
-# downsizes an image to target_size on its longest axis
 def downsize_frame(frame, target_size=256):
-    # takes in an image [1xhxwxc] and a target for the long side of the image
-    # returns and image [1xhxwxc] who's longest size is target size
+    """
+    Downsizes an image to target_size on its longest axis
 
+    :param frame: a [1xhxwxc] image
+    :type frame: image
+    :param target_size: a target length for the long side of the image
+    :return: a [1xhxwxc] image tensor who's longest size is target size
+    :rtype: image
+    """
     _, height, width, _ = frame.shape
+
     if height > width:
         scale = float(target_size / height)
         target_height = target_size
@@ -26,9 +38,18 @@ def downsize_frame(frame, target_size=256):
 
 
 # init movenet
-interpreter = tf.lite.Interpreter(model_path='movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
+interpreter = tf.lite.Interpreter(model_path='./movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
 interpreter.allocate_tensors()
 def movenet(scaled_frame_tensor):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in an image [1xhxwxc] tensor
     # returns as [1x6x56] tensor of features
 
@@ -57,6 +78,15 @@ def movenet(scaled_frame_tensor):
 
 # changes movenet data to a more usable format
 def reorganize_movenet_result(movenet_result):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in [1x6x56] tensor
     # returns
     # [1x6x17x3] tensor joints,
@@ -79,6 +109,15 @@ def reorganize_movenet_result(movenet_result):
 # creates mask of very uncertain joints
 # combines the head joints
 def remove_unusable_joints(joints):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in [1x6x17x3] tensor of joints
     # returns
     # [1x6x13x3] tensor of joints,
@@ -89,6 +128,15 @@ def remove_unusable_joints(joints):
 # TODO: this
 # uses joints to create features from their connections (bones)
 def create_bone_feature(joints):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in [1x6x17x3] tensor of joints
     # returns
     # [1x6x14x2] tensor of bones,
@@ -98,6 +146,15 @@ def create_bone_feature(joints):
 
 # TODO: this
 def combine_feature(joints, bones):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in [1x6x13x3] tensor of joints
     # takes in [1x6x14x2] tensor of bones
     # returns
@@ -106,6 +163,15 @@ def combine_feature(joints, bones):
 
 
 def get_features_from_image(image):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # takes in an image [w, h, c]
     # returns feature vector 1x6x17x3
 

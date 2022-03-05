@@ -1,4 +1,9 @@
-import datetime
+"""
+:Date: 2022-02-28
+:Version: 1.0
+:Author: - Quin Adam
+:Description: Extracts features from a frame
+"""
 import os
 
 import cv2
@@ -18,6 +23,15 @@ FEATURE_FILE = "processed_features/processed_data_20.npz"
 
 # Load Videos
 def load_video(path, max_frames=0):
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     cap = cv2.VideoCapture(path)
     frames = []
     try:
@@ -38,6 +52,15 @@ def load_video(path, max_frames=0):
 
 # extract features from videos
 def prepare_all_videos():
+    # TODO: make docstring
+    """
+    description ...
+
+    :parm p1: parameter description
+    :type p1: parameter type
+    :return: return description
+    :rtype: return type
+    """
     # get video paths and use directories as label names
     video_paths = [(os.path.split(a)[1], files) for a, b, files in os.walk(VIDEO_DIRECTORY)]
     video_paths = [[(l[0], i) for i in l[1]] for l in video_paths[1:]]
@@ -69,7 +92,7 @@ def prepare_all_videos():
     )
 
     # For each video, get features
-    for idx, path in enumerate(video_label_df.values):
+    for idx, path in enumerate(video_label_df.values[0:1]):
         path = os.path.join(path[0], path[1])
         # Gather all its frames and add a batch dimension.
         frames = load_video(os.path.join(VIDEO_DIRECTORY, path))
