@@ -1,8 +1,11 @@
 """
 :Date: 2022-02-28
-:Version: 1.0
-:Author: - Quin Adam
-:Description: Extracts features from a frame
+:Author: Quin Adam
+:Description:
+    This module was created for feature extraction from videos.
+    It is designed to take in a frame, and return the skeletons
+    of the people in the frame. The skeletons map out both joints
+    and bones, and are used as features for machine learning.
 """
 import math
 import tensorflow as tf
@@ -10,13 +13,14 @@ import tensorflow as tf
 
 def downsize_frame(frame, target_size=256):
     """
-    Downsizes an image to target_size on its longest axis
+    Downsizes an image to the target_size on its longest axis.
 
-    :param frame: a [1xhxwxc] image
-    :type frame: image
+    :param frame: a [1, h, w, c] image, h: height, w: width, c: channel (RGB)
+    :type frame: [1, h, w, c] image
     :param target_size: a target length for the long side of the image
-    :return: a [1xhxwxc] image tensor who's longest size is target size
-    :rtype: image
+    :type target_size: int
+    :return: an image tensor who's longest size is target size
+    :rtype: [1, h, w, c] tensor
     """
     _, height, width, _ = frame.shape
 
@@ -38,20 +42,21 @@ def downsize_frame(frame, target_size=256):
 
 
 # init movenet
-interpreter = tf.lite.Interpreter(model_path='./movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
-interpreter.allocate_tensors()
+# interpreter = tf.lite.Interpreter(model_path='./movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
+# interpreter.allocate_tensors()
 def movenet(scaled_frame_tensor):
-    # TODO: make docstring
     """
-    description ...
+    Takes an image and returns the joints of skeletons in the image.
+    The longest side of the image must be 256 pixels.
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param scaled_frame_tensor: a [1, h, w, c] image who's longest side is 256 pixels,
+        h: height, w: width, c: channel (RGB)
+    :type scaled_frame_tensor: [1, h, w, c] tensor
+    :return: a [1, 6, 56] ndarray, the second dimension is for each skeleton, the third dimension has multiple parts:
+        the first 17*3=51 floats are (y, x, confidence-score) of each of the 17 joints, the last 5 are (y-min, x-min,
+        y-max, x-max, confidence-score) of the bounding box around the skeleton
+    :rtype: [1, 6, 56] ndarray
     """
-    # takes in an image [1xhxwxc] tensor
-    # returns as [1x6x56] tensor of features
 
     # TF Lite format expects tensor type of uint8.
     input_image = tf.cast(scaled_frame_tensor, dtype=tf.uint8)
@@ -76,22 +81,19 @@ def movenet(scaled_frame_tensor):
     return keypoints_with_scores
 
 
-# changes movenet data to a more usable format
 def reorganize_movenet_result(movenet_result):
-    # TODO: make docstring
     """
-    description ...
+    Changes raw movenet data to a more usable format. Specifically it puts
+    joints and bounding box in their own tensors. Also returns a mask of which
+    skeletons are viable based on the bounding box confidence score.
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param movenet_result: an ndarray containing the result from the movenet interpreter
+    :type movenet_result: [1, 6, 56] ndarray
+    :return: **joints**: a tensor with the locations of the joints of each skeleton,
+        **boxes**: a tensor with the bounds of each skeleton,
+        **people_mask**: a mask of which skeletons are actually detected
+    :rtype: ([1, 6, 17, 3] tensor, [1, 6, 4] tensor, [1, 6, 1] tensor)
     """
-    # takes in [1x6x56] tensor
-    # returns
-    # [1x6x17x3] tensor joints,
-    # [1x6x4] tensor bounding_boxes,
-    # [1x6x1] people_mask
 
     # split raw tensor
     joints, boxes, confidence = tf.split(movenet_result, [56-4-1, 4, 1], 2)
@@ -102,58 +104,48 @@ def reorganize_movenet_result(movenet_result):
     joints = tf.transpose(joints, perm=[1, 0, 2])
     joints = tf.expand_dims(joints, axis=0)
 
+    #TODO: turn confidence into a mask based on a threshold hyperparameter
     return joints, boxes, confidence
 
 
 # TODO: this
-# creates mask of very uncertain joints
-# combines the head joints
 def remove_unusable_joints(joints):
-    # TODO: make docstring
     """
-    description ...
+    Creates a mask of joints with a low confidence score. Also combines the 5 joints on the head into just one.
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param joints: a tensor with the locations of the joints of each skeleton
+    :type joints: [1, 6, 17, 3] tensor
+    :return: **joints**: the same input joints tensor with the head joints combined,
+        **joint_mask**: a mask for the joints based on the confidence score of them
+    :rtype: ([1, 6, 13, 3] tensor, [1, 6, 13] tensor)
     """
-    # takes in [1x6x17x3] tensor of joints
-    # returns
-    # [1x6x13x3] tensor of joints,
-    # [1x6x13] joint_mask
     pass
 
 
 # TODO: this
-# uses joints to create features from their connections (bones)
 def create_bone_feature(joints):
-    # TODO: make docstring
     """
-    description ...
+    Uses joints to create features from their connections (bones)
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param joints: a tensor with the locations of the joints of each skeleton
+    :type joints: [1, 6, 13, 3] tensor
+    :return: a tensor with the angle and length of each bone
+    :rtype: [1, 6, 14, 2] tensor
     """
-    # takes in [1x6x17x3] tensor of joints
-    # returns
-    # [1x6x14x2] tensor of bones,
-    # [1x6x14] bone_mask
     pass
 
 
 # TODO: this
 def combine_feature(joints, bones):
-    # TODO: make docstring
     """
-    description ...
+    Combines the features from joints and bones into one feature tensor for ML training and inference.
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param joints: a tensor with the locations of the joints of each skeleton
+    :type joints: [1, 6, 13, 3] tensor
+    :param bones: a tensor with the angle and length of each bone
+    :type bones: [1, 6, 14, 2] tensor
+    :return: a tensor with these features combined into one feature tensor, [1, 6, (13*3)+(14*2)=67]
+    :rtype: [1, 6, 67] tensor
     """
     # takes in [1x6x13x3] tensor of joints
     # takes in [1x6x14x2] tensor of bones
@@ -162,23 +154,22 @@ def combine_feature(joints, bones):
     pass
 
 
-def get_features_from_image(image):
-    # TODO: make docstring
+def get_features_from_image(frame):
     """
-    description ...
+    Takes in an image of any size and extracts the skeletal features of that image.
 
-    :parm p1: parameter description
-    :type p1: parameter type
-    :return: return description
-    :rtype: return type
+    :param frame: a [1, h, w, c] image, h: height, w: width, c: channel (RGB)
+    :type frame: [1, h, w, c] image
+    :return: a tensor with the extracted features
+    :rtype: [1, 6, 17, 3] tensor
     """
     # takes in an image [w, h, c]
     # returns feature vector 1x6x17x3
 
     # add extra dim to image
-    image = tf.expand_dims(image, axis=0)
+    frame = tf.expand_dims(frame, axis=0)
     # downsize image
-    downsized_image = downsize_frame(image)
+    downsized_image = downsize_frame(frame)
     # run through movenet
     raw_joints = movenet(downsized_image)
     # convert joints to more readable

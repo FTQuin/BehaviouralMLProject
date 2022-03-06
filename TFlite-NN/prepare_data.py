@@ -1,7 +1,6 @@
 """
 :Date: 2022-02-28
-:Version: 1.0
-:Author: - Quin Adam
+:Author: Quin Adam
 :Description: Extracts features from a frame
 """
 import os
