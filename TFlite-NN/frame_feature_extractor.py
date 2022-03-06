@@ -42,8 +42,8 @@ def downsize_frame(frame, target_size=256):
 
 
 # init movenet
-# interpreter = tf.lite.Interpreter(model_path='./movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
-# interpreter.allocate_tensors()
+interpreter = tf.lite.Interpreter(model_path='./movenet/lite-model_movenet_multipose_lightning_tflite_float16_1.tflite')
+interpreter.allocate_tensors()
 def movenet(scaled_frame_tensor):
     """
     Takes an image and returns the joints of skeletons in the image.
@@ -147,10 +147,6 @@ def combine_feature(joints, bones):
     :return: a tensor with these features combined into one feature tensor, [1, 6, (13*3)+(14*2)=67]
     :rtype: [1, 6, 67] tensor
     """
-    # takes in [1x6x13x3] tensor of joints
-    # takes in [1x6x14x2] tensor of bones
-    # returns
-    # [1x6x67] feature tensor [(13*3)+14*2)]
     pass
 
 
@@ -163,8 +159,6 @@ def get_features_from_image(frame):
     :return: a tensor with the extracted features
     :rtype: [1, 6, 17, 3] tensor
     """
-    # takes in an image [w, h, c]
-    # returns feature vector 1x6x17x3
 
     # add extra dim to image
     frame = tf.expand_dims(frame, axis=0)
