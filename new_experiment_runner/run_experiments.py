@@ -3,19 +3,19 @@ import preprocess_data as datasets
 
 # EXPERIMENT
 EXPERIMENT_NAME = 'test_experiment'
-EXPERIMENT_PARAMS = [{'validation_split': 0.3,
+EXPERIMENT_PARAMS = [
+                     {'batch_size': 32,
                       'epochs': 10,
                       },
-                     {'validation_split': 0.3,
+                     {'batch_size': 32,
                       'epochs': 10,
                       },
                      ]
 
 # DATA
-FEATURE_DATA = [(datasets.UCF.movenet_extractor, {'train_test_split': 0.3,
-                                                  }),
-                (datasets.NTU.movenet_extractor, {'train_test_split': 0.3,
-                                                  }),
+FEATURE_DATA = [
+                datasets.UCF.movenet_extractor,
+                datasets.NTU.movenet_extractor,
                 ]
 
 # MODELS
@@ -31,22 +31,39 @@ MODEL_PARAMS = [(models.rnn, {'activation_function': 'relu',
                 ]
 
 
+def train_model(model, data, params):
+    return model.fit(
+        data.train_data,
+        data.train_labels,
+        epochs=params['epochs'],
+        batch_size=params['batch_size'],
+    )
 
-def get_data():
+
+def test_model():
+    return model.evaluate(
+        data.test_data,
+        data.test_labels,
+        batch_size=params['batch_size'],
+    )
+
+
+def save_results(model):
     pass
 
 
-def get_model():
-    pass
-
-
-def train_model():
-    pass
-
-
-def save_results():
+def save_models(models):
     pass
 
 
 if __name__ == '__main__':
+    models = []
+    # train test loop
     for params, data, model in zip(EXPERIMENT_PARAMS, FEATURE_DATA, MODEL_PARAMS):
+        model = model[0](**model[1])  # get model
+        train_model(model, data, params)  # train model
+        test_model(model, data, params)  # evaluate model
+        save_results(model)  # save results
+        models.append(model)
+
+    save_models(models)  # save all models
