@@ -10,12 +10,16 @@ from tensorflow import keras
 import tensorflow as tf
 
 NUM_FEATURES = 17*6*3
-SEQ_LENGTH = 20
+SEQ_LENGTH = 100
 
-EPOCHS = 25
+EPOCHS = 50
 
-MODEL_FILE = 'models/9Sports_100Frame_25epochs'
-FEATURE_FILE = 'processed_features/processed_data_9Sports_100Frame.npz'
+MODEL_DIR = 'models/3Sports_100Frame_50epochs_RUN1_2GRU_RELU'
+FEATURE_FILE = 'processed_features/processed_data_3Sports_100Frame.npz'
+
+LOSS_FUNCTION = 'sparse_categorical_crossentropy'
+ACTIVATION_FUNCTION = 'relu'
+OPTIMIZER = 'adam'
 
 
 # load data from feature file
@@ -58,14 +62,14 @@ def create_sequence_model(num_labels=2):
     )
     x = keras.layers.GRU(8)(x)
     x = keras.layers.Dropout(0.4)(x)
-    x = keras.layers.Dense(16, activation='relu')(x)
-    x = keras.layers.Dense(8, activation='relu')(x)
+    x = keras.layers.Dense(16, activation=ACTIVATION_FUNCTION)(x)
+    x = keras.layers.Dense(8, activation=ACTIVATION_FUNCTION)(x)
     output = keras.layers.Dense(num_labels, activation='softmax')(x)
 
     rnn_model = keras.Model([frame_features_input], output)
 
     rnn_model.compile(
-        loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy"]
+        loss=LOSS_FUNCTION, optimizer=OPTIMIZER, metrics=["accuracy"]
     )
     return rnn_model
 
@@ -82,7 +86,7 @@ def train_model():
     :rtype: return type
     """
     checkpoint = keras.callbacks.ModelCheckpoint(
-        MODEL_FILE, save_weights_only=True, save_best_only=False, verbose=1
+        './tmp/', save_weights_only=True, save_best_only=False, verbose=1
     )
 
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -92,15 +96,17 @@ def train_model():
     seq_model.fit(
         features,
         labels,
-        validation_split=0.3,
+        validation_split=0.25,
         epochs=EPOCHS,
         callbacks=[checkpoint, tensorboard_callback],
     )
-    print('Training Done')
+
+    tf.keras.models.save_model(seq_model, MODEL_DIR)
+    print('Training Done, Model Saved')
 
 
 # Get a trained model from a file
-def get_trained_sequence_model(filepath=MODEL_FILE, num_labels=2):
+def get_trained_sequence_model(filepath=MODEL_DIR, num_labels=2):
     # TODO: make docstring
     """
     description ...
