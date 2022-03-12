@@ -3,3 +3,5 @@
 /TFlite-NN/tmp/
 /TFlite-NN/.ipynb_checkpoints/
 .idea
+/new_experiment_runner/__pycache__/
+/TFlite-NN/processed_features/

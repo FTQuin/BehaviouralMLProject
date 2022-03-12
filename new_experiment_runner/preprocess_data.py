@@ -6,7 +6,7 @@ import pandas as pd
 from tensorflow import keras
 import tensorflow as tf
 
-import define_preprocesses as pre
+import feature_extractors as pre
 
 VIDEO_DIRECTORY = '../datasets/UCF-101'
 FEATURE_FILE = "../TFlite-NN/processed_features/processed_data_20.npz"

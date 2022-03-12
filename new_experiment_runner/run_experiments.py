@@ -1,4 +1,4 @@
-import define_models as models
+import models as models
 import preprocess_data as datasets
 
 # EXPERIMENT
