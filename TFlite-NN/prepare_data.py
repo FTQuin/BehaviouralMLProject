@@ -15,7 +15,7 @@ import frame_feature_extractor as ffe
 
 NUM_FEATURES = 17*6*3
 SEQ_LENGTH = 20
-
+print(SEQ_LENGTH)
 VIDEO_DIRECTORY = './UCF-101'
 FEATURE_FILE = "processed_features/processed_data_20.npz"
 
