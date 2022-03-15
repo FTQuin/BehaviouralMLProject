@@ -1,33 +1,32 @@
-import models as models
+import models_config as models
 import preprocess_data as datasets
 
 # EXPERIMENT
 EXPERIMENT_NAME = 'test_experiment'
 EXPERIMENT_PARAMS = [
-                     {'batch_size': 32,
+                     {'batch_size': 16,
                       'epochs': 10,
                       },
                      {'batch_size': 32,
-                      'epochs': 10,
+                      'epochs': 20,
                       },
                      ]
 
 # DATA
-FEATURE_DATA = [
-                datasets.UCF.movenet_extractor,
-                datasets.NTU.movenet_extractor,
-                ]
+DATASET_AND_EXTRACTOR = [(datasets.UCF.movenet_extractor, {'threshold': 0.5}),
+                         (datasets.NTU.movenet_extractor, {'threshold': 0.5}),
+                         ]
 
 # MODELS
 TRAIN_NETWORKS = True
-MODEL_PARAMS = [(models.rnn, {'activation_function': 'relu',
-                              'loss_function': 'sparse_categorical_crossentropy',
-                              'optimizer': 'adam',
-                              }),
-                (models.rnn, {'activation_function': 'relu',
-                              'loss_function': 'sparse_categorical_crossentropy',
-                              'optimizer': 'adam',
-                              }),
+MODEL_PARAMS = [(models.GRU.gru1, {'activation_function': 'relu',
+                                   'loss_function': 'sparse_categorical_crossentropy',
+                                   'optimizer': 'adam',
+                                   }),
+                (models.GRU.gru2, {'activation_function': 'sigmoid',
+                                   'loss_function': 'sparse_categorical_crossentropy',
+                                   'optimizer': 'adam',
+                                   }),
                 ]
 
 
@@ -40,7 +39,7 @@ def train_model(model, data, params):
     )
 
 
-def test_model():
+def test_model(model, data, params):
     return model.evaluate(
         data.test_data,
         data.test_labels,
@@ -48,22 +47,23 @@ def test_model():
     )
 
 
-def save_results(model):
-    pass
+def save_model(model):
+    newModel = data.featuresextractor+model
+    tf.save(newModel)
 
 
-def save_models(models):
+def save_results(models):
     pass
 
 
 if __name__ == '__main__':
     models = []
     # train test loop
-    for params, data, model in zip(EXPERIMENT_PARAMS, FEATURE_DATA, MODEL_PARAMS):
+    for params, data, model in zip(EXPERIMENT_PARAMS, DATASET_AND_EXTRACTOR, MODEL_PARAMS):
         model = model[0](**model[1])  # get model
         train_model(model, data, params)  # train model
         test_model(model, data, params)  # evaluate model
-        save_results(model)  # save results
+        save_model(models)  # save model
         models.append(model)
 
-    save_models(models)  # save all models
+    save_results(models)  # save results

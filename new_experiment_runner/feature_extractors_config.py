@@ -5,7 +5,7 @@ class movenet_extractor():
     def __init__(self, name=None):
         super(movenet_extractor, self).__init__()
 
-        model = tf.saved_model.load('./movenet/movenet_multipose_lightning_1')
+        model = tf.saved_model.load('../movenet/movenet_multipose_lightning_1')
         self.movenet = model.signatures['serving_default']
 
     @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='uint8'),))
