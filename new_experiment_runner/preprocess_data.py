@@ -50,8 +50,8 @@ def prepare_all_videos():
         video_length = len(frames)
         for frame in frames:
             extracted_features = FEATURE_EXTRACTOR.pre_process_features(frame[None, ...])
-            series = pd.Series(data=tf.keras.layers.Flatten()(extracted_features))
-            temp_frame_features = pd.concat((temp_frame_features, series))
+            features_df = pd.DataFrame(data=tf.keras.layers.Flatten()(extracted_features).numpy())
+            temp_frame_features = pd.concat((temp_frame_features, features_df), ignore_index=True)
 
         temp_frame_features = pd.DataFrame(
             data={'video': video['name'], 'label': label, 'frame': range(video_length), **temp_frame_features})

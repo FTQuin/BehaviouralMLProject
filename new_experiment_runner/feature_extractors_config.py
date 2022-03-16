@@ -28,14 +28,14 @@ class MovenetExtractor(ExtractorAbstract):
         # threshold when outputting features
         self.threshold = threshold
 
-    @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='uint8'),))
+    # @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='uint8'),))
     def pre_process_features(self, frames):
         t1 = tf.image.resize_with_pad(frames, 256, 256)  # resize and pad
         t2 = tf.cast(t1, dtype=tf.int32)  # cast to int32
         out = self.movenet(t2)['output_0']  # get result
         return out
 
-    @tf.function(input_signature=(tf.TensorSpec(shape=[None, 6, 56], dtype='uint8'),))
+    # @tf.function(input_signature=(tf.TensorSpec(shape=[None, 6, 56], dtype='uint8'),))
     def post_process_features(self, features):
         cond = tf.less(features, tf.constant(self.threshold, dtype=features.dtype))
         out = tf.where(cond, tf.zeros(tf.shape(features), dtype=features.dtype), features)
@@ -46,5 +46,5 @@ if __name__ == '__main__':
     img = tf.io.decode_jpeg(tf.io.read_file('../TFlite-NN/images/image.jpeg'))
     img = tf.expand_dims(img, axis=0)
     movenet = MovenetExtractor()
-    res = movenet.extract(img)
+    res = movenet.pre_process_features(img)
     print(res.shape)
