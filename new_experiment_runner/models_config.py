@@ -1,7 +1,9 @@
 from tensorflow import keras
 
+class model_abstract():
+    pass
 
-class GRU:
+class GRU(model_abstract):
     @staticmethod
     def gru1(input_shape, output_size, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         frame_features_input = keras.Input(input_shape)

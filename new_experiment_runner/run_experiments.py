@@ -13,8 +13,8 @@ EXPERIMENT_PARAMS = [
                      ]
 
 # DATA
-DATASET_AND_EXTRACTOR = [(datasets.UCF.movenet_extractor, {'threshold': 0.5}),
-                         (datasets.NTU.movenet_extractor, {'threshold': 0.5}),
+DATASET_AND_EXTRACTOR = [(datasets.UCF.MovenetExtractor, {'threshold': 0.5}),
+                         (datasets.NTU.MovenetExtractor, {'threshold': 0.5}),
                          ]
 
 # MODELS
