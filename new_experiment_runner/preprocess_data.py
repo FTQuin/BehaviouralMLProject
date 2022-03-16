@@ -5,20 +5,16 @@
 """
 import os
 
-import cv2
 import pandas as pd
-import numpy as np
 from tensorflow import keras
 import tensorflow as tf
 
 from feature_extractors_config import MovenetExtractor
 import datasets_config
 
+FILE_NAME = 'features'
 FEATURE_EXTRACTOR = MovenetExtractor()
 DATASET = datasets_config.UCF()
-
-# [label], [video,frame, x, y, channel]
-# [video, label], [video, frames, features]]
 
 
 # extract features from videos
@@ -45,6 +41,7 @@ def prepare_all_videos():
         # display progress
         # TODO: uncomment
         # print(f'Extracting features of video: {idx}/{DATASET.num_videos}, {100 * idx / DATASET.num_videos:.2f}% done')
+        print(f'Extracting features of video: {idx}')
 
         # Extract features from the frames of the current video.
         video_length = len(frames)
@@ -55,20 +52,24 @@ def prepare_all_videos():
 
         temp_frame_features = pd.DataFrame(
             data={'video': video['name'], 'label': label, 'frame': range(video_length), **temp_frame_features})
-        frame_features = pd.concat((frame_features, temp_frame_features))
+        frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
 
     return frame_features
 
 
-# TODO: uncomment
-# def save_data(extracted_frame_pd):
-#     extracted_frame_pd.to_csv(datasets.save_file_path, index=False)
+def save_data(extracted_frame_pd):
+    extracted_frame_pd.to_csv(os.path.join(DATASET.features_save_path, FILE_NAME+'.zip'), index=False,
+                              compression=dict(method='zip', archive_name=FILE_NAME+'.csv'))
+
 
 if __name__ == '__main__':
     print('Preparing Data')
     # prepare data
     features = prepare_all_videos()
 
-    # TODO: uncomment
-    # # save data
-    # save_data(features)
+    print('Saving Data')
+    # save data
+    save_data(features)
+
+    # TODO: make more verbose
+    print('DONE')
