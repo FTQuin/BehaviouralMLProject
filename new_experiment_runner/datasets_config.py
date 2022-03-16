@@ -28,8 +28,8 @@ class DatasetAbstract:
 class UCF(DatasetAbstract):
     def __init__(self):
         self.dataset_name = 'UCF-101'
-        self.data_path = os.path.abspath(os.path.join('../datasets', self.dataset_name))
-        self.feature_path = os.path.abspath(os.path.join('../features/', self.dataset_name))
+        self.data_path = os.path.abspath(os.path.join('./datasets', self.dataset_name))
+        self.feature_path = os.path.abspath(os.path.join('./features/', self.dataset_name))
 
     def get_videos(self):
         # get video paths
