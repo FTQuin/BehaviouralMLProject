@@ -20,7 +20,7 @@ class DatasetAbstract:
             cap.release()
         return np.array(frames)
 
-    def get_videos(self):
+    def get_video_information(self):
         pass
         # returns labels pd.df[video, label], videos[video, frame, x, y, c]
 
@@ -28,10 +28,10 @@ class DatasetAbstract:
 class UCF(DatasetAbstract):
     def __init__(self):
         self.dataset_name = 'UCF-101'
-        self.data_path = os.path.abspath(os.path.join('./datasets', self.dataset_name))
-        self.feature_path = os.path.abspath(os.path.join('./features/', self.dataset_name))
+        self.data_path = os.path.abspath(os.path.join('../datasets', self.dataset_name))
+        self.feature_path = os.path.abspath(os.path.join('../features/', self.dataset_name))
 
-    def get_videos(self):
+    def get_video_information(self):
         # get video paths
         video_labels_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(self.data_path)]
         video_labels_paths = [(os.path.split(label_tup[0])[1], os.path.join(label_tup[0], vid_path)) for label_tup in video_labels_paths[1:] for vid_path in label_tup[1]]
@@ -48,7 +48,7 @@ class UCF(DatasetAbstract):
                 if self_iter.video_index < len(video_labels_paths):
                     x = self_iter.video_labels_paths[self_iter.video_index]
                     self_iter.video_index += 1
-                    return x[0], self._load_video(x[1])
+                    return x[0], {'frames': self._load_video(x[1]), 'name': os.path.split(x[0])[-1]}
                 else:
                     raise StopIteration
 
