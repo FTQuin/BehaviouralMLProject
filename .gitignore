@@ -5,3 +5,6 @@
 .idea
 /new_experiment_runner/__pycache__/
 /TFlite-NN/processed_features/
+/datasets/NTU/NTU-Data/
+/datasets/NTU/dummy_data/
+/TFlite-NN/models/
