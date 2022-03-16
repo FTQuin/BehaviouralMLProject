@@ -5,9 +5,9 @@ import numpy as np
 
 
 class DatasetAbstract:
-    def load_video(self, path):
-        cap = cv2.VideoCapture(path)
+    def _load_video(self, path):
         frames = []
+        cap = cv2.VideoCapture(path)
         try:
             while True:
                 ret, frame = cap.read()
@@ -33,8 +33,8 @@ class UCF(DatasetAbstract):
 
     def get_videos(self):
         # get video paths
-        video_labels_paths = [(os.path.split(curr_path)[1], files) for curr_path, sub_dirs, files in os.walk(self.data_path)]
-        video_labels_paths = [(label_tup[0], vid_path) for label_tup in video_labels_paths[1:] for vid_path in label_tup[1]]
+        video_labels_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(self.data_path)]
+        video_labels_paths = [(os.path.split(label_tup[0])[1], os.path.join(label_tup[0], vid_path)) for label_tup in video_labels_paths[1:] for vid_path in label_tup[1]]
 
         class VideoIterator:
             def __init__(self_iter, vlp):
@@ -48,7 +48,7 @@ class UCF(DatasetAbstract):
                 if self_iter.video_index < len(video_labels_paths):
                     x = self_iter.video_labels_paths[self_iter.video_index]
                     self_iter.video_index += 1
-                    return x[0], self.load_video(x[1])
+                    return x[0], self._load_video(x[1])
                 else:
                     raise StopIteration
 
