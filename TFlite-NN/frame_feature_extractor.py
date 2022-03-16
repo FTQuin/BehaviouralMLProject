@@ -104,7 +104,7 @@ def reorganize_movenet_result(movenet_result):
     joints = tf.transpose(joints, perm=[1, 0, 2])
     joints = tf.expand_dims(joints, axis=0)
 
-    #TODO: turn confidence into a mask based on a threshold hyperparameter
+    # TODO: turn confidence into a mask based on a threshold hyperparameter
     return joints, boxes, confidence
 
 
