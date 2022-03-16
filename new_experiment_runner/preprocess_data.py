@@ -10,15 +10,14 @@ import pandas as pd
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
-import frame_feature_extractor as ffe
 
-feature_extractor = fec.mobile
-dataset = datasets.UCF
+# import frame_feature_extractor as ffe
+from feature_extractors_config import movenet_extractor
 
+# dataset = datasets.UCF
 
-#[video, x, y, channle]
-#[video, label], [video, frames, features]]
-
+# [label], [video,frame, x, y, channel]
+# [video, label], [video, frames, features]]
 
 # Load Videos
 def load_video(path, max_frames=0):
@@ -61,35 +60,39 @@ def prepare_all_videos():
     :rtype: return type
     """
 
-    frame_features = np.zeros(
-        shape=(num_samples, SEQ_LENGTH, NUM_FEATURES), dtype="float32"
-    )
+    # pass frame_features into model
+    frame_features = pd.DataFrame()
 
-    # For each video, get features
-    for idx, path in enumerate(video_label_df.values):
+    # # For each video, get features
+    for idx, video, label in enumerate(dataset.get_video_information()):
         # Gather all its frames and add a batch dimension.
-        frames = load_video(os.path.join(VIDEO_DIRECTORY, path))
-        frames = frames[None, ...]
+        frames = video['frames'][None, ...]
+
+        temp_frame_features = pd.DataFrame()
         # display progress
-        print(f'Extracting features of video: {idx}/{num_samples}, {100*idx/num_samples:.2f}% done')
+        print(f'Extracting features of video: {idx}/{dataset.num_videos}, {100 * idx / dataset.num_videos:.2f}% done')
 
         # Extract features from the frames of the current video.
-        for i, batch in enumerate(frames):
-            video_length = batch.shape[0]
-            for j in range(video_length):
-                features = ffe.get_features_from_image(batch[j, :])
-                temp_frame_features[i, j, :] = tf.keras.layers.Flatten()(features)
-            temp_frame_mask[i, :length] = 1  # 1 = not masked, 0 = masked
+        video_length = frames.shape[0]
+        for j in range(video_length):
+            extracted_features = movenet_extractor.extract(frames[j])
+            series = pd.Series(data=tf.keras.layers.Flatten()(extracted_features))
+            temp_frame_features = pd.concat((temp_frame_features, series))
 
-        frame_features[idx, ] = temp_frame_features.squeeze()
+        temp_frame_features = pd.DataFrame(
+            data={'video': video['name'], 'label': label, 'frame': range(video_length), **temp_frame_features})
+        frame_features = pd.concat((frame_features, temp_frame_features))
 
-    return frame_features, labels
+    return frame_features
 
+
+def save_data(extracted_frame_pd):
+    extracted_frame_pd.to_csv(datasets.save_file_path, index=False)
 
 if __name__ == '__main__':
     print('Preparing Data')
     # prepare data
-    features, labels = prepare_all_videos()
+    features = prepare_all_videos()
 
     # save data
-    save_data(features, labels)
+    save_data(features)
