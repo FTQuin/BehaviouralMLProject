@@ -1,11 +1,12 @@
 import os
-
+import tensorflow as tf
 import cv2
 import numpy as np
 
 
 class DatasetAbstract:
-    def _load_video(self, path):
+    @staticmethod
+    def _load_video(path):
         frames = []
         cap = cv2.VideoCapture(path)
         try:
@@ -14,15 +15,15 @@ class DatasetAbstract:
                 if not ret:
                     break
                 frame = frame[:, :, [2, 1, 0]]
-                frame = frame.astype('float64')
+                frame = frame.astype('int32')
                 frames.append(frame)
         finally:
             cap.release()
-        return np.array(frames)
+        return tf.convert_to_tensor(np.array(frames))
 
     def get_video_information(self):
         pass
-        # returns labels pd.df[video, label], videos[video, frame, x, y, c]
+        # returns iterator that returns label, video[frame, x, y, c]
 
 
 class UCF(DatasetAbstract):
@@ -45,10 +46,12 @@ class UCF(DatasetAbstract):
                 return self_iter
 
             def __next__(self_iter):
-                if self_iter.video_index < len(video_labels_paths):
+                # TODO: uncomment
+                # if self_iter.video_index < len(video_labels_paths):
+                if self_iter.video_index < 20:
                     x = self_iter.video_labels_paths[self_iter.video_index]
                     self_iter.video_index += 1
-                    return x[0], {'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
+                    return {'label': x[0], 'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
                 else:
                     raise StopIteration
 

@@ -1,5 +1,6 @@
 import models_config as models
-import preprocess_data as datasets
+import datasets_config as datasets
+import feature_extractors_config as feature_extractors
 
 # EXPERIMENT
 EXPERIMENT_NAME = 'test_experiment'
@@ -13,8 +14,10 @@ EXPERIMENT_PARAMS = [
                      ]
 
 # DATA
-DATASET_AND_EXTRACTOR = [(datasets.UCF.MovenetExtractor, {'threshold': 0.5}),
-                         (datasets.NTU.MovenetExtractor, {'threshold': 0.5}),
+DATASET_AND_EXTRACTOR = [(datasets.UCF, {'extractor': feature_extractors.MovenetExtractor,
+                                         'threshold': 0.5}),
+                         (datasets.NTU, {'extractor': feature_extractors.MovenetExtractor,
+                                         'threshold': 0.5}),
                          ]
 
 # MODELS
@@ -30,12 +33,13 @@ MODEL_PARAMS = [(models.GRU.gru1, {'activation_function': 'relu',
                 ]
 
 
-def train_model(model, data, params):
+def train_model(model, data, experiment_params):
+
     return model.fit(
         data.train_data,
         data.train_labels,
-        epochs=params['epochs'],
-        batch_size=params['batch_size'],
+        epochs=experiment_params['epochs'],
+        batch_size=experiment_params['batch_size'],
     )
 
 
@@ -48,7 +52,7 @@ def test_model(model, data, params):
 
 
 def save_model(model):
-    newModel = data.featuresextractor+model
+    newModel = data_params.featuresextractor + model
     tf.save(newModel)
 
 
@@ -56,14 +60,28 @@ def save_results(models):
     pass
 
 
+def init_model(model_params):
+    model = model_params[0](**model_params[1])  # get model
+    return model
+
+
+def init_data(data_params):
+    dataset = data_params[0](**data_params[1])
+    dataset =
+
+
 if __name__ == '__main__':
     models = []
     # train test loop
-    for params, data, model in zip(EXPERIMENT_PARAMS, DATASET_AND_EXTRACTOR, MODEL_PARAMS):
-        model = model[0](**model[1])  # get model
-        train_model(model, data, params)  # train model
-        test_model(model, data, params)  # evaluate model
-        save_model(models)  # save model
+    for experiment_params, data_params, model_params in zip(EXPERIMENT_PARAMS, DATASET_AND_EXTRACTOR, MODEL_PARAMS):
+        # init based on hyper parameters
+        model = init_model(model_params)
+        data = init_data(data_params)
+
+        train_model(model, data, experiment_params)  # train model
+        test_model(model, data, experiment_params)  # evaluate model
+
+        save_model(model, data, experiment_params)  # save model
         models.append(model)
 
     save_results(models)  # save results

@@ -22,13 +22,13 @@ class MovenetExtractor(ExtractorAbstract):
         super(MovenetExtractor, self).__init__()
 
         # get movenet
-        model = tf.saved_model.load('../movenet/movenet_multipose_lightning_1')
-        self.movenet = model.signatures['serving_default']
+        self.model = tf.saved_model.load('../movenet/movenet_multipose_lightning_1') # keep ref to model
+        self.movenet = self.model.signatures['serving_default']
 
         # threshold when outputting features
         self.threshold = threshold
 
-    # @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='uint8'),))
+    @tf.function(input_signature=(tf.TensorSpec(shape=[1, None, None, 3], dtype='int32'),))
     def pre_process_features(self, frames):
         t1 = tf.image.resize_with_pad(frames, 256, 256)  # resize and pad
         t2 = tf.cast(t1, dtype=tf.int32)  # cast to int32
