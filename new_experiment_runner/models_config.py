@@ -1,12 +1,14 @@
 from tensorflow import keras
 
+
 class model_abstract():
     pass
 
+
 class GRU(model_abstract):
     @staticmethod
-    def gru1(input_shape, output_size, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
-        frame_features_input = keras.Input(input_shape)
+    def gru1(input_shape, output_size, training=False, seq_len=-1, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+        frame_features_input = keras.Input((seq_len, input_shape))
         x = keras.layers.GRU(16, return_sequences=True)(
             frame_features_input
         )
