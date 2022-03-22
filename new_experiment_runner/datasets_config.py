@@ -84,18 +84,31 @@ class UCF(DatasetAbstract):
 
         return self.__video_labels_paths
 
-    def train_data(self, seq_len):
-        dir_path = os.path.join(self.features_save_path(), str(type(self.extractor)).split('.')[-1][:-2], 'features.zip')
+    def train_data(self, seq_len, file_name='features'):
+        # get path
+        dir_path = os.path.join(self.features_save_path(),  # path to features
+                                str(type(self.extractor)).split('.')[-1][:-2],  # path of features with extractor
+                                file_name+'.zip')  # specific sub set of features
+        # load into pandas df
         data = pd.read_csv(dir_path, compression='zip')
+        # get unique video keys
         keys = data['video'].unique()
+        # create output array
         out = np.ndarray((len(keys), seq_len, int(data.columns[-1]) + 1))
+        # add videos into output array
         for idx, key in enumerate(keys):
+            # get all frames with key of video
             df = data[data['video'] == key]
+            # add label to labels arr
             self.labels.append(df['label'].unique()[0])
+            # remove un-needed columns
             arr = df.drop(['video', 'label', 'frame'], axis=1).to_numpy()
-            start = np.random.randint(len(arr) - seq_len + 1)
-            arr = arr[start:start + seq_len]
-            out[idx] = arr
+            # get random starting point
+            start = np.random.randint((len(arr) - seq_len + 1) if len(arr) > seq_len else 1)
+            # get sequence of frames
+            sub_arr = arr[start:start + seq_len]
+            # add sequence to output arr
+            out[idx][seq_len-len(sub_arr):] = sub_arr
 
         return out
 
