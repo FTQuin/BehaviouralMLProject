@@ -10,7 +10,7 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment'
+EXPERIMENT_NAME = 'test_experiment_2'
 EXPERIMENT_PARAMS = [{'batch_size': 16,
                       'epochs': 25,
                       },
@@ -30,8 +30,7 @@ EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {'threshold': 0.5}),
                     ]
 
 # MODELS
-TRAIN_NETWORKS = True
-MODEL_PARAMS = [(models.GRU.gru1, {'seq_len': 20,
+MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 20,
                                    'activation_function': 'relu',
                                    'loss_function': 'sparse_categorical_crossentropy',
                                    'optimizer': 'adam',

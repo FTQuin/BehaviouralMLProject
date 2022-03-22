@@ -7,7 +7,7 @@ class model_abstract():
 
 class GRU(model_abstract):
     @staticmethod
-    def gru1(input_shape, output_size, training=False, seq_len=-1, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+    def gru1(input_shape, output_size, seq_len=-1, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         frame_features_input = keras.Input((seq_len, input_shape))
         x = keras.layers.GRU(16, return_sequences=True)(
             frame_features_input
@@ -25,7 +25,7 @@ class GRU(model_abstract):
         return gru_model
 
     @staticmethod
-    def gru2(self, input_shape, output_size, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+    def gru2(input_shape, output_size, seq_len=-1, activation_function='relu', loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential(
             [
                 keras.layers.GRU(160, return_sequences=True),
@@ -37,3 +37,7 @@ class GRU(model_abstract):
                 keras.layers.Dense(output_size, activation='softmax'),
             ]
         )
+
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["accuracy"])
+        return model
+
