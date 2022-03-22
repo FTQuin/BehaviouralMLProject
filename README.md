@@ -26,7 +26,7 @@ LIBRARIES
 3. Run File
 - The models will train based on the parameters you set and will be saved in the saved_experiments directory under the name  experiment\_name parameter 
 4. Results
-- Results can be viewed in tensorboard by launching it with log directory set to the current experiments log directory. **ex.** tensorboard --logdir models/test_experiment/logs/
+- Results can be viewed in tensorboard by launching it with log directory set to the current experiments log directory. **ex.** tensorboard --logdir saved_experiments/test_experiment/logs/
 5. Live Demo
 - Open live_demo.ipynb
 - Set directory in cell 2 to the directory of the model you would like to demo

@@ -85,7 +85,7 @@ class UCF(DatasetAbstract):
         return self.__video_labels_paths
 
     def train_data(self, seq_len):
-        dir_path = os.path.join(self.features_save_path(), str(type(self.extractor)).split('.')[-1][:-2], 'test.zip')
+        dir_path = os.path.join(self.features_save_path(), str(type(self.extractor)).split('.')[-1][:-2], 'features.zip')
         data = pd.read_csv(dir_path, compression='zip')
         keys = data['video'].unique()
         out = np.ndarray((len(keys), seq_len, int(data.columns[-1]) + 1))

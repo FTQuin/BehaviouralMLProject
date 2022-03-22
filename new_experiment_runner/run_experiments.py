@@ -70,7 +70,7 @@ def test_model(model, dataset, experiment_params):
 
 
 def save_model(model, extractor, idx):
-    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, idx)
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, str(idx))
     try:
         os.mkdir(dir_path)
     except:
