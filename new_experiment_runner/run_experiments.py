@@ -10,23 +10,23 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_2'
+EXPERIMENT_NAME = 'test_experiment_3'
 EXPERIMENT_PARAMS = [{'batch_size': 16,
                       'epochs': 25,
                       },
-                     # {'batch_size': 32,
-                     #  'epochs': 20,
-                     #  }
+                     {'batch_size': 32,
+                      'epochs': 20,
+                      }
                      ]
 
 # DATA
 DATASETS_PARAMS = [(datasets.UCF, {'train_test_split': .75}),
-                   # (datasets.NTU, {'train_test_split': .75}),
+                   (datasets.UCF, {'train_test_split': .75}),
                    ]
 
 # EXTRACTOR
 EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {'threshold': 0.5}),
-                    # (feature_extractors.MovenetExtractor, {'threshold': 0.5}),
+                    (feature_extractors.MovenetExtractor, {'threshold': 0.5}),
                     ]
 
 # MODELS
@@ -35,11 +35,11 @@ MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 20,
                                    'loss_function': 'sparse_categorical_crossentropy',
                                    'optimizer': 'adam',
                                    }),
-                # (models.GRU.gru2, {'seq_len': 29,
-                #                    'activation_function': 'sigmoid',
-                #                    'loss_function': 'sparse_categorical_crossentropy',
-                #                    'optimizer': 'adam',
-                #                    }),
+                (models.GRU.gru2, {'seq_len': 29,
+                                   'activation_function': 'sigmoid',
+                                   'loss_function': 'sparse_categorical_crossentropy',
+                                   'optimizer': 'adam',
+                                   }),
                 ]
 
 
@@ -69,8 +69,8 @@ def test_model(model, dataset, experiment_params):
     )
 
 
-def save_model(model, extractor):
-    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME)
+def save_model(model, extractor, idx):
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, idx)
     try:
         os.mkdir(dir_path)
     except:
@@ -103,8 +103,8 @@ def save_results(models):
 if __name__ == '__main__':
     models = []
     # train test loop
-    for experiment_params, data_params, extractor_params, model_params in \
-            zip(EXPERIMENT_PARAMS, DATASETS_PARAMS, EXTRACTOR_PARAMS, MODEL_PARAMS):
+    for idx, (experiment_params, data_params, extractor_params, model_params) in \
+            enumerate(zip(EXPERIMENT_PARAMS, DATASETS_PARAMS, EXTRACTOR_PARAMS, MODEL_PARAMS)):
 
         # init based on hyper parameters
         extractor = extractor_params[0](**extractor_params[1])  # get extractor
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         train_model(model, dataset, experiment_params)  # train model
         # test_model(model, dataset, experiment_params)  # evaluate model
 
-        save_model(model, extractor)  # save model
+        save_model(model, extractor, idx)  # save model
         models.append(model)
 
     save_results(models)  # save results
