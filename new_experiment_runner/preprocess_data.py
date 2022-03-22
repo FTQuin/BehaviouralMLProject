@@ -92,7 +92,7 @@ def prepare_all_videos_parallel():
     frame_features = pd.DataFrame()
 
     # initiallize multiprocessing pool
-    pool = mp.pool.ThreadPool(1)
+    pool = mp.pool.ThreadPool(2)
 
     with tf.device('/CPU:0'):
         videos_iterator = pool.imap_unordered(prepare_one_video_parallel, dataset.data_iterator(), chunksize=1)
@@ -121,7 +121,7 @@ def prepare_one_video_parallel(video_info):
 def prepare_one_batch_parallel(frames):
     return tf.map_fn(feature_extractor.pre_process_features, tf.expand_dims(frames, axis=1),
                      fn_output_signature=tf.TensorSpec((1, 6, 56)),
-                     parallel_iterations=2,
+                     parallel_iterations=40,
                      # swap_memory=True,
                      )
 

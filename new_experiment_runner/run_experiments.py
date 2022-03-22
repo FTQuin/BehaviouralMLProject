@@ -31,7 +31,7 @@ EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {'threshold': 0.5}),
 
 # MODELS
 TRAIN_NETWORKS = True
-MODEL_PARAMS = [(models.GRU.gru1, {'seq_len': 29,
+MODEL_PARAMS = [(models.GRU.gru1, {'seq_len': 20,
                                    'activation_function': 'relu',
                                    'loss_function': 'sparse_categorical_crossentropy',
                                    'optimizer': 'adam',
@@ -71,7 +71,7 @@ def test_model(model, dataset, experiment_params):
 
 
 def save_model(model, extractor):
-    dir_path = os.path.join('../models', EXPERIMENT_NAME)
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME)
     try:
         os.mkdir(dir_path)
     except:
@@ -86,7 +86,7 @@ def save_model(model, extractor):
         @tf.function(input_signature=[tf.TensorSpec([1, None, None, 3], tf.int32)])
         def __call__(self, x):
             t1 = self.extractor.extract(x)
-            t2 = tf.random.uniform((1, 28, 6*56))
+            t2 = tf.random.uniform((1, 20-1, 6*56))
             t3 = tf.concat([t2, tf.reshape(t1, (1, -1))[None, :]], 1)
             out = self.model(t3, training=False)
             return out
@@ -95,6 +95,7 @@ def save_model(model, extractor):
     call_output = total_mod.__call__.get_concrete_function(tf.random.uniform((1, 1000, 1000, 3), dtype='int32', maxval=255))
     # tf.saved_model.save(call_output, dir_path)
     tf.saved_model.save(model, dir_path)
+
 
 def save_results(models):
     pass

@@ -11,7 +11,7 @@ class DatasetAbstract:
     _features_save_path = None
     _data_iterator = None
 
-    def __init__(self, train_test_split, extractor):
+    def __init__(self, extractor, train_test_split=.75):
         self.train_test_split = train_test_split
         self.extractor = extractor
         self.labels = []
@@ -39,7 +39,7 @@ class DatasetAbstract:
 
     def features_save_path(self):
         if not self._features_save_path:
-            self._features_save_path = os.path.abspath(os.path.join('../datasets', self.dataset_name))
+            self._features_save_path = os.path.abspath(os.path.join('../features', self.dataset_name))
         return self._features_save_path
 
     def data_iterator(self):
@@ -63,8 +63,8 @@ class UCF(DatasetAbstract):
 
                 def __next__(self_iter):
                     # TODO: uncomment
-                    # if self_iter.video_index < len(video_labels_paths):
-                    if self_iter.video_index < 20:
+                    if self_iter.video_index < len(self_iter.video_labels_paths):
+                    # if self_iter.video_index < 20:
                         x = self_iter.video_labels_paths[self_iter.video_index]
                         self_iter.video_index += 1
                         return {'label': x[0], 'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
@@ -85,8 +85,7 @@ class UCF(DatasetAbstract):
         return self.__video_labels_paths
 
     def train_data(self, seq_len):
-        # dir_path = os.path.join(self.features_save_path(), str(type(self.extractor)).split('.')[-1][:-2])
-        dir_path = 'D:\\Users\\quinj\\Documents\\School\\Winter 2022\\Capstone COMP 4910\\BehaviouralMLProject\\features\\UCF-101\\MovenetExtractor\\features.zip'
+        dir_path = os.path.join(self.features_save_path(), str(type(self.extractor)).split('.')[-1][:-2], 'test.zip')
         data = pd.read_csv(dir_path, compression='zip')
         keys = data['video'].unique()
         out = np.ndarray((len(keys), seq_len, int(data.columns[-1]) + 1))

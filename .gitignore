@@ -8,6 +8,7 @@
 /datasets/NTU/NTU-Data/
 /datasets/NTU/dummy_data/
 /TFlite-NN/models/
+/.idea/
 /features/UCF-101/MovenetExtractor/features.zip
 /features/UCF-101/MovenetExtractor/test.zip
 /.idea/

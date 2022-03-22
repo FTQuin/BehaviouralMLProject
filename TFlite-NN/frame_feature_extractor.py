@@ -169,7 +169,7 @@ def get_features_from_image(frame):
     # convert joints to more readable
     joints, boxes, confidence = reorganize_movenet_result(raw_joints)
 
-    return joints
+    return tf.reshape(raw_joints, (1, -1))
 
 
 if __name__ == '__main__':
