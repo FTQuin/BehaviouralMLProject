@@ -14,7 +14,7 @@ import feature_extractors_config
 import datasets_config
 
 # Modifiable Params
-FILE_NAME = 'features'
+FILE_NAME = 'features_2'
 FEATURE_EXTRACTOR_CONFIG = feature_extractors_config.MobileNetV2Extractor
 DATASET_CONFIG = datasets_config.UCF
 
@@ -90,7 +90,7 @@ def prepare_all_videos_parallel():
     # pass frame_features into model
     frame_features = pd.DataFrame()
 
-    # initiallize multiprocessing pool
+    # initialize multiprocessing pool
     pool = mp.pool.ThreadPool(1)
 
     with tf.device('/CPU:0'):
@@ -98,8 +98,8 @@ def prepare_all_videos_parallel():
 
         for idx, temp_frame_features in enumerate(videos_iterator):
             print('finished video:', idx+1)
-            frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
-
+            temp_frame_features.to_csv(os.path.join(dataset.features_save_path, video_info['name'].replace('.avi', '.csv')))
+            # frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
     return frame_features
 
 
