@@ -22,10 +22,11 @@ class ExtractorAbstract:
 
 
 class MovenetExtractor(ExtractorAbstract):
+    num_features = 6 * 56
+    name = "MovenetExtractor"
+
     def __init__(self, threshold=0.0):
-        num_features = 6 * 56
-        name = "MovenetExtractor"
-        super(MovenetExtractor, self).__init__(num_features, name)
+        super(MovenetExtractor, self).__init__(MovenetExtractor.num_features, MovenetExtractor.name)
 
         # get movenet
         self.model = tf.saved_model.load('../movenet/movenet_multipose_lightning_1')  # keep ref to model
@@ -50,10 +51,11 @@ class MovenetExtractor(ExtractorAbstract):
 
 
 class InceptionExtractor(ExtractorAbstract):
+    num_features = 2048
+    name = "InceptionExtractor"
+
     def __init__(self, img_size):
-        num_features = 2048
-        name = "InceptionExtractor"
-        super(InceptionExtractor, self).__init__(num_features, name)
+        super(InceptionExtractor, self).__init__(InceptionExtractor.num_features, InceptionExtractor.name)
         feature_extractor = tf.keras.applications.InceptionV3(
             weights="imagenet",
             include_top=False,
@@ -76,10 +78,11 @@ class InceptionExtractor(ExtractorAbstract):
 
 
 class MobileNetV2Extractor(ExtractorAbstract):
+    num_features = 1280
+    name = "MobileNetV2Extractor"
+
     def __init__(self, img_size):
-        num_features = 1280
-        name = "MobileNetV2Extractor"
-        super(MobileNetV2Extractor, self).__init__(num_features, name)
+        super(MobileNetV2Extractor, self).__init__(MobileNetV2Extractor.num_features, MobileNetV2Extractor.name)
         feature_extractor = tf.keras.applications.MobileNetV2(
             weights="imagenet",
             include_top=False,
