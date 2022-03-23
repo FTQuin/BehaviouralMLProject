@@ -73,7 +73,9 @@ def test_model(model, dataset, experiment_params):
 
     dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, 'logs/eval/')
     logdir = dir_path + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir,
+                                                          histogram_freq=1,
+                                                          profile_batch='500,520')
 
     out = model.evaluate(
         x, y,

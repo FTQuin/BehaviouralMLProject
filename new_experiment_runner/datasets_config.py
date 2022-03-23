@@ -74,11 +74,19 @@ class UCF:
         def __init__(self, extractor, train_test_split=.75, file_name='features'):
             super(UCF.training, self).__init__(UCF.dataset_name, extractor, train_test_split)
 
-            # get path
-            dir_path = os.path.join(self.features_save_path,  # path to features
-                                    file_name + '.zip')  # specific sub set of features
+            self.ds = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*'))
+            for f in self.ds.take(5):
+                print(f.numpy())
+
+            def process_path(file_path):
+                label = tf.strings.split(file_path, os.sep)[-1]
+                return tf.data.Dataset.from_tensor_slices(), label
+
+            self.labeled_ds = self.ds.map(process_path)
+
+
             # load into pandas df
-            self.data = pd.read_csv(dir_path, compression='zip')
+            self.data = pd.read_csv('./', compression='zip')
 
             train_vids = pd.Series(self.data['video'].unique()).sample(frac=train_test_split)
             self.train_data = self.data.loc[self.data['video'].isin(train_vids)]

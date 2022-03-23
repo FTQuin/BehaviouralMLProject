@@ -98,7 +98,7 @@ def prepare_all_videos_parallel():
 
         for idx, temp_frame_features in enumerate(videos_iterator):
             print('finished video:', idx+1)
-            temp_frame_features.to_csv(os.path.join(dataset.features_save_path, video_info['name'].replace('.avi', '.csv')))
+            temp_frame_features.to_csv(os.path.join(dataset.features_save_path, temp_frame_features['video'][0].replace('.avi', '.csv')))
             # frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
     return frame_features
 
