@@ -10,18 +10,18 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_3'
+EXPERIMENT_NAME = 'test_experiment_5'
 EXPERIMENT_PARAMS = [{'batch_size': 16,
-                      'epochs': 25,
+                      'epochs': 10,
                       },
                      {'batch_size': 32,
-                      'epochs': 20,
+                      'epochs': 10,
                       }
                      ]
 
 # DATA
-DATASETS_PARAMS = [(datasets.UCF, {'train_test_split': .75}),
-                   (datasets.UCF, {'train_test_split': .75}),
+DATASETS_PARAMS = [(datasets.UCF.training, {'train_test_split': .75}),
+                   (datasets.UCF.training, {'train_test_split': .75}),
                    ]
 
 # EXTRACTOR
@@ -30,12 +30,12 @@ EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {'threshold': 0.5}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 20,
+MODEL_PARAMS = [(models.GRU.gru1, {'seq_len': 100,
                                    'activation_function': 'relu',
                                    'loss_function': 'sparse_categorical_crossentropy',
                                    'optimizer': 'adam',
                                    }),
-                (models.GRU.gru2, {'seq_len': 29,
+                (models.GRU.gru2, {'seq_len': 30,
                                    'activation_function': 'sigmoid',
                                    'loss_function': 'sparse_categorical_crossentropy',
                                    'optimizer': 'adam',
@@ -43,17 +43,16 @@ MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 20,
                 ]
 
 
-def train_model(model, dataset, experiment_params):
-    x = dataset.train_data(MODEL_PARAMS[0][1]['seq_len'])
-    y = dataset.train_labels()
+def train_model(model, dataset, experiment_params, idx):
+    x = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
+    y = dataset.get_train_labels()
 
     dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, 'logs/fit/')
     logdir = dir_path + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback=tf.keras.callbacks.TensorBoard(log_dir=logdir)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
     out = model.fit(
-        x,
-        y,
+        x, y,
         epochs=experiment_params['epochs'],
         batch_size=experiment_params['batch_size'],
         callbacks=[tensorboard_callback]
@@ -62,11 +61,19 @@ def train_model(model, dataset, experiment_params):
 
 
 def test_model(model, dataset, experiment_params):
-    return model.evaluate(
-        dataset.test_data,
-        dataset.test_labels,
+    x = dataset.get_test_data(MODEL_PARAMS[idx][1]['seq_len'])
+    y = dataset.get_test_labels()
+
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, 'logs/eval/')
+    logdir = dir_path + datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+
+    out = model.evaluate(
+        x, y,
         batch_size=experiment_params['batch_size'],
+        callbacks=[tensorboard_callback]
     )
+    return out
 
 
 def save_model(model, extractor, idx):
@@ -84,14 +91,14 @@ def save_model(model, extractor, idx):
 
         @tf.function(input_signature=[tf.TensorSpec([1, None, None, 3], tf.int32)])
         def __call__(self, x):
-            t1 = self.extractor.extract(x)
+            t1 = self.extractor.live_extract(x)
             t2 = tf.random.uniform((1, 20-1, 6*56))
             t3 = tf.concat([t2, tf.reshape(t1, (1, -1))[None, :]], 1)
             out = self.model(t3, training=False)
             return out
 
-    total_mod = TotalModel()
-    call_output = total_mod.__call__.get_concrete_function(tf.random.uniform((1, 1000, 1000, 3), dtype='int32', maxval=255))
+    # total_mod = TotalModel()
+    # call_output = total_mod.__call__.get_concrete_function(tf.random.uniform((1, 1000, 1000, 3), dtype='int32', maxval=255))
     # tf.saved_model.save(call_output, dir_path)
     tf.saved_model.save(model, dir_path)
 
@@ -111,8 +118,8 @@ if __name__ == '__main__':
         dataset = data_params[0](**data_params[1], extractor=extractor)  # get data
         model = model_params[0](input_shape=extractor.num_features, output_size=3, **model_params[1])  # get model
 
-        train_model(model, dataset, experiment_params)  # train model
-        # test_model(model, dataset, experiment_params)  # evaluate model
+        train_model(model, dataset, experiment_params, idx)  # train model
+        test_model(model, dataset, experiment_params)  # evaluate model
 
         save_model(model, extractor, idx)  # save model
         models.append(model)

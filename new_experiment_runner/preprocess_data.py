@@ -20,7 +20,7 @@ DATASET_CONFIG = datasets_config.UCF
 
 # init configs
 feature_extractor = FEATURE_EXTRACTOR_CONFIG()
-dataset = DATASET_CONFIG(feature_extractor)
+dataset = DATASET_CONFIG.preprocessing(feature_extractor)
 
 
 # extract features from videos
@@ -55,7 +55,7 @@ def prepare_all_videos():
         # Extract features from the frames of the current video.
         video_length = len(frames)
         for frame in frames:
-            extracted_features = feature_extractor.pre_process_features(frame[None, ...])
+            extracted_features = feature_extractor.pre_process_extract(frame[None, ...])
             features_df = pd.DataFrame(data=tf.keras.layers.Flatten()(extracted_features).numpy())
             temp_frame_features = pd.concat((temp_frame_features, features_df), ignore_index=True)
 
@@ -67,14 +67,13 @@ def prepare_all_videos():
 
 
 def save_data(extracted_frame_pd):
-    dir_path = os.path.join(dataset.features_save_path(), str(type(feature_extractor)).split('.')[-1][:-2])
     try:
-        os.mkdir(dir_path)
+        os.mkdir(dataset.features_save_path)
     except:
         pass
     finally:
-        extracted_frame_pd.to_csv(os.path.join(dir_path, FILE_NAME+'.zip'), index=False,
-                                  compression=dict(method='zip', archive_name=FILE_NAME+'.csv'))
+        extracted_frame_pd.to_csv(os.path.join(dataset.features_save_path, FILE_NAME+'.zip'),
+                                  index=False, compression=dict(method='zip', archive_name=FILE_NAME+'.csv'))
 
 
 def prepare_all_videos_parallel():
@@ -92,20 +91,20 @@ def prepare_all_videos_parallel():
     frame_features = pd.DataFrame()
 
     # initiallize multiprocessing pool
-    pool = mp.pool.ThreadPool(2)
+    pool = mp.pool.ThreadPool(1)
 
-    with tf.device('/CPU:0'):
-        videos_iterator = pool.imap_unordered(prepare_one_video_parallel, dataset.data_iterator(), chunksize=1)
+    # with tf.device('/CPU:0'):
+    videos_iterator = pool.imap_unordered(prepare_one_video_parallel, dataset.data_iterator, chunksize=1)
 
-        for idx, temp_frame_features in enumerate(videos_iterator):
-            print('finished video:', idx+1)
-            frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
+    for idx, temp_frame_features in enumerate(videos_iterator):
+        print('finished video:', idx+1)
+        frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
 
     return frame_features
 
 
 def prepare_one_video_parallel(video_info):
-    frames = video_info['frames'][:20]
+    frames = video_info['frames']
 
     res = prepare_one_batch_parallel(frames)
     res = tf.reshape(res, (res.shape[0], -1))
@@ -119,10 +118,10 @@ def prepare_one_video_parallel(video_info):
 
 @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='int32'),))
 def prepare_one_batch_parallel(frames):
-    return tf.map_fn(feature_extractor.pre_process_features, tf.expand_dims(frames, axis=1),
+    return tf.map_fn(feature_extractor.pre_process_extract, tf.expand_dims(frames, axis=1),
                      fn_output_signature=tf.TensorSpec((1, 6, 56)),
-                     parallel_iterations=40,
-                     # swap_memory=True,
+                     parallel_iterations=5,
+                     swap_memory=True,
                      )
 
 
