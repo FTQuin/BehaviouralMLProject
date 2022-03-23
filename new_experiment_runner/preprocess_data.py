@@ -79,16 +79,13 @@ def save_data(extracted_frame_pd):
 def prepare_all_videos_parallel():
     # TODO: make docstring
     """
-    description ...
+    Create extracted features csvs for each video
 
     :parm p1: parameter description
     :type p1: parameter type
     :return: return description
-    :rtype: return type
+    :rtype:
     """
-
-    # pass frame_features into model
-    frame_features = pd.DataFrame()
 
     # initialize multiprocessing pool
     pool = mp.pool.ThreadPool(1)
@@ -98,9 +95,14 @@ def prepare_all_videos_parallel():
 
         for idx, temp_frame_features in enumerate(videos_iterator):
             print('finished video:', idx+1)
-            temp_frame_features.to_csv(os.path.join(dataset.features_save_path, video_info['name'].replace('.avi', '.csv')))
-            # frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
-    return frame_features
+            try:
+                if os.path.exists(os.path.join(dataset.features_save_path, temp_frame_features['label'][0])):
+                    temp_frame_features.to_csv(os.path.join(dataset.features_save_path, temp_frame_features['label'][0], temp_frame_features['video'][0].replace('.avi', '.csv')))
+                else:
+                    os.mkdir(os.path.join(dataset.features_save_path, temp_frame_features['label'][0]))
+                    temp_frame_features.to_csv(os.path.join(dataset.features_save_path, temp_frame_features['label'][0], temp_frame_features['video'][0].replace('.avi', '.csv')))
+            except:
+                pass
 
 
 def prepare_one_video_parallel(video_info):
@@ -112,7 +114,6 @@ def prepare_one_video_parallel(video_info):
 
     temp_frame_features = pd.DataFrame(
         data={'video': video_info['name'], 'label': video_info['label'], 'frame': range(len(frames)), **temp_frame_features})
-
     return temp_frame_features
 
 
