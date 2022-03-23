@@ -81,7 +81,7 @@ class MobileNetV2Extractor(ExtractorAbstract):
     num_features = 1280
     name = "MobileNetV2Extractor"
 
-    def __init__(self, img_size=224):
+    def __init__(self):
         super(MobileNetV2Extractor, self).__init__(MobileNetV2Extractor.num_features, MobileNetV2Extractor.name)
         self.feature_extractor = tf.keras.applications.MobileNetV2(
             weights="imagenet",
