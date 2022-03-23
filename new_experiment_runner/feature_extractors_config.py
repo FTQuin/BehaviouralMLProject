@@ -81,24 +81,18 @@ class MobileNetV2Extractor(ExtractorAbstract):
     num_features = 1280
     name = "MobileNetV2Extractor"
 
-    def __init__(self, img_size):
+    def __init__(self, img_size=224):
         super(MobileNetV2Extractor, self).__init__(MobileNetV2Extractor.num_features, MobileNetV2Extractor.name)
-        feature_extractor = tf.keras.applications.MobileNetV2(
+        self.feature_extractor = tf.keras.applications.MobileNetV2(
             weights="imagenet",
             include_top=False,
             pooling="avg",
-            input_shape=(img_size, img_size, 3),
         )
-        preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
-
-        inputs = tf.keras.Input((img_size, img_size, 3))
-        preprocessed = preprocess_input(inputs)
-
-        outputs = feature_extractor(preprocessed)
-        self.model = tf.keras.Model(inputs, outputs)
 
     def pre_process_extract(self, frames):
-        return self.model(frames)
+        pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(frames, dtype='float32'))
+        out = self.feature_extractor(pre)
+        return out
 
     def train_extract(self, features):
         return features

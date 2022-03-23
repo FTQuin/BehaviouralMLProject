@@ -10,11 +10,13 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_5'
-EXPERIMENT_PARAMS = [{'batch_size': 16,
+EXPERIMENT_NAME = 'test_experiment_7'
+EXPERIMENT_PARAMS = [{'name': 'name_1',
+                      'batch_size': 16,
                       'epochs': 10,
                       },
-                     {'batch_size': 32,
+                     {'name': 'name_2',
+                      'batch_size': 32,
                       'epochs': 10,
                       }
                      ]
@@ -25,21 +27,21 @@ DATASETS_PARAMS = [(datasets.UCF.training, {'train_test_split': .75}),
                    ]
 
 # EXTRACTOR
-EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {'threshold': 0.5}),
-                    (feature_extractors.MovenetExtractor, {'threshold': 0.5}),
+EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
+                    (feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.GRU.gru1, {'seq_len': 100,
-                                   'activation_function': 'relu',
-                                   'loss_function': 'sparse_categorical_crossentropy',
-                                   'optimizer': 'adam',
-                                   }),
-                (models.GRU.gru2, {'seq_len': 30,
-                                   'activation_function': 'sigmoid',
-                                   'loss_function': 'sparse_categorical_crossentropy',
-                                   'optimizer': 'adam',
-                                   }),
+MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
+                                     'activation_function': 'relu',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
+                (models.LSTM.lstm1, {'seq_len': 30,
+                                     'activation_function': 'sigmoid',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
                 ]
 
 
@@ -47,12 +49,17 @@ def train_model(model, dataset, experiment_params, idx):
     x = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
     y = dataset.get_train_labels()
 
-    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, 'logs/fit/')
-    logdir = dir_path + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+    log_dir = os.path.join('../saved_experiments',
+                           EXPERIMENT_NAME,
+                           'logs/fit/',
+                           experiment_params['name'] + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
 
     out = model.fit(
         x, y,
+        validation_data=(dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len']),
+                         dataset.get_train_labels()),
         epochs=experiment_params['epochs'],
         batch_size=experiment_params['batch_size'],
         callbacks=[tensorboard_callback]
@@ -119,7 +126,7 @@ if __name__ == '__main__':
         model = model_params[0](input_shape=extractor.num_features, output_size=3, **model_params[1])  # get model
 
         train_model(model, dataset, experiment_params, idx)  # train model
-        test_model(model, dataset, experiment_params)  # evaluate model
+        # test_model(model, dataset, experiment_params)  # evaluate model
 
         save_model(model, extractor, idx)  # save model
         models.append(model)

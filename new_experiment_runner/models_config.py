@@ -22,7 +22,7 @@ class GRU:
         return gru_model
 
     @staticmethod
-    def gru2(input_shape, output_size, seq_len=-1, activation_function='relu',
+    def gru2(input_shape, output_size, seq_len, activation_function='relu',
              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential(
             [
@@ -42,7 +42,7 @@ class GRU:
 
 class LSTM:
     @staticmethod
-    def lstm1(input_shape, output_size, seq_len=-1, activation_function='relu',
+    def lstm1(input_shape, output_size, seq_len, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         frame_features_input = keras.Input((seq_len, input_shape))
         x = keras.layers.LSTM(16, return_sequences=True)(frame_features_input)
@@ -59,9 +59,9 @@ class LSTM:
         return lstm_model
 
     @staticmethod
-    def lstm2(input_shape, output_size, seq_len=-1, activation_function='relu',
+    def lstm2(input_shape, output_size, seq_len, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
-        frame_features_input = (input_shape, seq_len)
+        frame_features_input = (seq_len, input_shape)
         model = keras.Sequential(
             [
                 keras.layers.LSTM(256, input_shape=frame_features_input, return_sequences=True),

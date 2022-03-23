@@ -14,8 +14,8 @@ import feature_extractors_config
 import datasets_config
 
 # Modifiable Params
-FILE_NAME = 'test'
-FEATURE_EXTRACTOR_CONFIG = feature_extractors_config.MovenetExtractor
+FILE_NAME = 'features'
+FEATURE_EXTRACTOR_CONFIG = feature_extractors_config.MobileNetV2Extractor
 DATASET_CONFIG = datasets_config.UCF
 
 # init configs
@@ -93,12 +93,12 @@ def prepare_all_videos_parallel():
     # initiallize multiprocessing pool
     pool = mp.pool.ThreadPool(1)
 
-    # with tf.device('/CPU:0'):
-    videos_iterator = pool.imap_unordered(prepare_one_video_parallel, dataset.data_iterator, chunksize=1)
+    with tf.device('/CPU:0'):
+        videos_iterator = pool.imap_unordered(prepare_one_video_parallel, dataset.data_iterator, chunksize=1)
 
-    for idx, temp_frame_features in enumerate(videos_iterator):
-        print('finished video:', idx+1)
-        frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
+        for idx, temp_frame_features in enumerate(videos_iterator):
+            print('finished video:', idx+1)
+            frame_features = pd.concat((frame_features, temp_frame_features), copy=False)
 
     return frame_features
 
@@ -119,7 +119,7 @@ def prepare_one_video_parallel(video_info):
 @tf.function(input_signature=(tf.TensorSpec(shape=[None, None, None, 3], dtype='int32'),))
 def prepare_one_batch_parallel(frames):
     return tf.map_fn(feature_extractor.pre_process_extract, tf.expand_dims(frames, axis=1),
-                     fn_output_signature=tf.TensorSpec((1, 6, 56)),
+                     fn_output_signature=tf.TensorSpec((1, 1280)),
                      parallel_iterations=5,
                      swap_memory=True,
                      )

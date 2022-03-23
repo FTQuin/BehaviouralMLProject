@@ -61,8 +61,8 @@ class UCF:
                     return self_iter
 
                 def __next__(self_iter):
-                    if self_iter.video_index < 20:  # uncomment to limit number of vids
-                    # if self_iter.video_index < len(self_iter.video_labels_paths):
+                    # if self_iter.video_index < 20:  # uncomment to limit number of vids
+                    if self_iter.video_index < len(self_iter.video_labels_paths):
                         x = self_iter.video_labels_paths[self_iter.video_index]
                         self_iter.video_index += 1
                         return {'label': x[0], 'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
