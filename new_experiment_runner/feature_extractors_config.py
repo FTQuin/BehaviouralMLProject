@@ -54,24 +54,18 @@ class InceptionExtractor(ExtractorAbstract):
     num_features = 2048
     name = "InceptionExtractor"
 
-    def __init__(self, img_size):
+    def __init__(self, img_size=256):
         super(InceptionExtractor, self).__init__(InceptionExtractor.num_features, InceptionExtractor.name)
-        feature_extractor = tf.keras.applications.InceptionV3(
+        self.feature_extractor = tf.keras.applications.InceptionV3(
             weights="imagenet",
             include_top=False,
             pooling="avg",
-            input_shape=(img_size, img_size, 3),
         )
-        preprocess_input = tf.keras.applications.inception_v3.preprocess_input
-
-        inputs = tf.keras.Input((img_size, img_size, 3))
-        preprocessed = preprocess_input(inputs)
-
-        outputs = feature_extractor(preprocessed)
-        self.model = tf.keras.Model(inputs, outputs)
 
     def pre_process_extract(self, frames):
-        return self.model(frames)
+        preprocess_input = tf.keras.applications.inception_v3.preprocess_input(tf.cast(frames, dtype='float32'))
+        output = self.feature_extractor(preprocess_input)
+        return output
 
     def train_extract(self, features):
         return features
