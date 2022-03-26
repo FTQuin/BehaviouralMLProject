@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-import numpy as np
 import tensorflow as tf
 
 import models_config as models
@@ -10,14 +9,14 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_7'
+EXPERIMENT_NAME = 'test_experiment_10'
 EXPERIMENT_PARAMS = [{'name': 'name_1',
                       'batch_size': 16,
-                      'epochs': 10,
+                      'epochs': 150,
                       },
                      {'name': 'name_2',
-                      'batch_size': 32,
-                      'epochs': 10,
+                      'batch_size': 16,
+                      'epochs': 150,
                       }
                      ]
 
@@ -28,17 +27,17 @@ DATASETS_PARAMS = [(datasets.UCF.training, {'train_test_split': .75}),
 
 # EXTRACTOR
 EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
-                    (feature_extractors.MobileNetV2Extractor, {}),
+                    (feature_extractors.MovenetExtractor, {}),
                     ]
 
 # MODELS
 MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
-                                     'activation_function': 'relu',
+                                     'activation_function': 'sigmoid',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
-                (models.LSTM.lstm1, {'seq_len': 30,
-                                     'activation_function': 'sigmoid',
+                (models.LSTM.lstm1, {'seq_len': 100,
+                                     'activation_function': 'relu',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
@@ -54,7 +53,9 @@ def train_model(model, dataset, experiment_params, idx):
                            'logs/fit/',
                            experiment_params['name'] + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                          histogram_freq=1,
+                                                          update_freq='epoch',)
 
     out = model.fit(
         x, y,

@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from abc import abstractmethod
 
@@ -87,17 +88,25 @@ class MobileNetV2Extractor(ExtractorAbstract):
     num_features = 1280
     name = "MobileNetV2Extractor"
 
-    def __init__(self):
+    def __init__(self, img_size=224):
         super(MobileNetV2Extractor, self).__init__(MobileNetV2Extractor.num_features, MobileNetV2Extractor.name)
         self.feature_extractor = tf.keras.applications.MobileNetV2(
+            # (img_size, img_size, 3),
             weights="imagenet",
             include_top=False,
             pooling="avg",
         )
 
-    def pre_process_extract_video(self, frames):
-        pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(frames, dtype='float32'))
-        out = self.feature_extractor(pre)
+    def pre_process_extract_video(self, frames, batch_size=32):
+        batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
+        out = None
+        for batch in batches:
+            pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(batch, dtype='float32'))
+            res = self.feature_extractor(pre)
+            if out is not None:
+                out = tf.concat([res, out], axis=0)
+            else:
+                out = res
         return out
 
     def train_extract(self, features):

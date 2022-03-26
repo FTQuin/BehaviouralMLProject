@@ -27,7 +27,7 @@ class preprocessingAbstract:
                 frames.append(frame)
         finally:
             cap.release()
-        return tf.convert_to_tensor(np.array(frames))
+        return np.array(frames)
 
 
 class trainingAbstract:
@@ -74,25 +74,28 @@ class UCF:
         def __init__(self, extractor, train_test_split=.75, file_name='features'):
             super(UCF.training, self).__init__(UCF.dataset_name, extractor, train_test_split)
 
-            self.ds = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*'))
-            for f in self.ds.take(5):
-                print(f.numpy())
+            # self.ds = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*'))
+            # for f in self.ds.take(5):
+            #     print(f.numpy())
+            #
+            # def process_path(file_path):
+            #     label = tf.strings.split(file_path, os.sep)[-1]
+            #     return tf.data.Dataset.from_tensor_slices(), label
+            #
+            # self.labeled_ds = self.ds.map(process_path)
 
-            def process_path(file_path):
-                label = tf.strings.split(file_path, os.sep)[-1]
-                return tf.data.Dataset.from_tensor_slices(), label
-
-            self.labeled_ds = self.ds.map(process_path)
-
-
+            features_dir = '../features/' + UCF.dataset_name +'/'+ extractor.name
+            features_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(features_dir)]
+            features_paths = [(os.path.split(label_tup[0])[1], os.path.join(label_tup[0], vid_path))
+                              for label_tup in features_paths[1:] for vid_path in label_tup[1]]
             # load into pandas df
-            self.data = pd.read_csv('./', compression='zip')
+            self.feature_paths = pd.DataFrame(features_paths, columns=['label', 'feature_path'])
 
-            train_vids = pd.Series(self.data['video'].unique()).sample(frac=train_test_split)
-            self.train_data = self.data.loc[self.data['video'].isin(train_vids)]
-            self.train_labels = self.train_data.groupby('video')['label'].first().values
-            self.test_data = self.data.loc[~self.data['video'].isin(train_vids)]
-            self.test_labels = self.test_data.groupby('video')['label'].first().values
+            train_vids = pd.Series(self.feature_paths['feature_path'].unique()).sample(frac=train_test_split)
+            self.train_data = self.feature_paths.loc[self.feature_paths['feature_path'].isin(train_vids)]
+            self.train_labels = self.train_data.groupby('feature_path')['label'].first().values
+            self.test_data = self.feature_paths.loc[~self.feature_paths['feature_path'].isin(train_vids)]
+            self.test_labels = self.test_data.groupby('feature_path')['label'].first().values
 
         def get_train_data(self, seq_len):
             return self._get_data(self.train_data, seq_len)
