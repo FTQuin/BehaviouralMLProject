@@ -143,7 +143,7 @@ if __name__ == '__main__':
         # init based on hyper parameters
         extractor = extractor_params[0](**extractor_params[1])  # get extractor
         dataset = data_params[0](**data_params[1], extractor=extractor)  # get data
-        model = model_params[0](output_size=3, **model_params[1])  # get model
+        model = model_params[0](output_size=len(dataset.labels), **model_params[1])  # get model
 
         train_model(model, dataset, experiment_params, idx)  # train model
         # test_model(model, dataset, experiment_params)  # evaluate model

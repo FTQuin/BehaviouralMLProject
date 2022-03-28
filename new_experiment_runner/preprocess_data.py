@@ -42,15 +42,16 @@ def prepare_all_videos():
 
         # make dir for video
         try:
-            os.mkdir(os.path.join(dataset.features_save_path, video_frame_features['label'][0]))
+            os.makedirs(os.path.join(dataset.features_save_path, video_frame_features['label'][0]))
         except:
             pass
 
-        # save features
+            # save features
         video_frame_features.to_csv(os.path.join(dataset.features_save_path, video_frame_features['label'][0],
-                                                video_frame_features['video'][0].replace('.avi', '.zip')),
-                                   compression=dict(method='zip',
-                                                    archive_name=video_frame_features['name'][0] + '.csv'))
+                                                 video_frame_features['video'][0].replace('.avi', '.zip')),
+                                    compression=dict(method='zip',
+                                                     archive_name=video_frame_features['video'][0].replace('.avi',
+                                                                                                           '.csv')))
 
         print(f'Saved to  {os.path.join(dataset.features_save_path, video_frame_features["label"][0], video_frame_features["video"][0].replace(".avi", ".csv"))}')
 
