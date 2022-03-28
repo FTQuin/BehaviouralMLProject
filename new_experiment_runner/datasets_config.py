@@ -33,9 +33,10 @@ class preprocessingAbstract:
 
 
 class trainingAbstract:
-    def __init__(self, dataset_name, extractor, train_test_split):
+    def __init__(self, dataset_name, extractor, seq_len, train_test_split):
         self.dataset_name = dataset_name
         self.extractor = extractor
+        self.seq_len = seq_len
         self.features_save_path = os.path.abspath(os.path.join('../features', self.dataset_name, self.extractor.name))
 
         self.train_test_split = train_test_split
@@ -73,11 +74,11 @@ class UCF:
             self.data_iterator = iter(VideoIterator(self._video_labels_paths))
 
     class training(trainingAbstract):
-        def __init__(self, extractor, train_test_split=.75, file_name='features'):
-            super(UCF.training, self).__init__(UCF.dataset_name, extractor, train_test_split)
+        def __init__(self, extractor, seq_len, train_test_split=.75):
+            super(UCF.training, self).__init__(UCF.dataset_name, extractor, seq_len, train_test_split)
 
-            dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
             self.labels = list(os.walk(self.features_save_path))[0][1]
+            dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
 
             def process_path(file_path):
                 def sub(fp):
@@ -90,17 +91,17 @@ class UCF:
                 res, labels = tf.py_function(
                     sub,
                     [file_path],
-                    [tf.TensorSpec(shape=[None, 1280], dtype=tf.dtypes.float32),
-                     tf.TensorSpec(shape=[1280], dtype=tf.dtypes.float32)])
-                res.set_shape([None, 1280])
+                    [tf.TensorSpec(shape=[None, self.extractor.num_features], dtype=tf.dtypes.float32),
+                     tf.TensorSpec(shape=[self.extractor.num_features], dtype=tf.dtypes.float32)])
+                res.set_shape([None, self.extractor.num_features])
                 labels.set_shape([None])
 
                 ds = tf.data.Dataset.from_tensor_slices(res)
                 ds = tf.data.Dataset.zip((ds, tf.data.Dataset.from_tensor_slices(labels)))
 
-                ds = ds.window(40, shift=1, drop_remainder=True)
+                ds = ds.window(self.seq_len, shift=1, drop_remainder=True)
                 ds = ds.shuffle(buffer_size=1000)
-                ds = ds.flat_map(lambda x, y: tf.data.Dataset.zip((x.batch(40), y.batch(1))))
+                ds = ds.flat_map(lambda x, y: tf.data.Dataset.zip((x.batch(self.seq_len), y.batch(1))))
 
                 return ds
             dataset = dataset.interleave(process_path)
