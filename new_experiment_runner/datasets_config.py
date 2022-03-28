@@ -78,7 +78,9 @@ class UCF:
             super(UCF.training, self).__init__(UCF.dataset_name, extractor, seq_len, train_test_split)
 
             self.labels = list(os.walk(self.features_save_path))[0][1]
+
             dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
+            dataset = dataset.shuffle(10000000)
 
             def process_path(file_path):
                 def sub(fp):
