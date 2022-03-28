@@ -14,7 +14,7 @@ class GRU:
             keras.layers.Dense(output_size, activation='softmax')
         ])
 
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["accuracy"])
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
         return model
 
     @staticmethod
@@ -30,7 +30,7 @@ class GRU:
             keras.layers.Dense(output_size, activation='softmax'),
         ])
 
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["accuracy"])
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
         return model
 
 
@@ -47,7 +47,7 @@ class LSTM:
             keras.layers.Dense(output_size, activation='softmax')
         ])
 
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["accuracy"])
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
         return model
 
     @staticmethod
@@ -63,5 +63,22 @@ class LSTM:
             keras.layers.Dense(output_size, activation='softmax'),
         ])
 
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["accuracy"])
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
+        return model
+
+    @staticmethod
+    def lstm3(output_size, activation_function='relu',
+              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+        model = keras.Sequential([
+            keras.layers.LSTM(3000, return_sequences=True),
+            keras.layers.Dropout(0.4),
+            keras.layers.LSTM(1280),
+            keras.layers.Dropout(0.4),
+            keras.layers.Dense(1280, activation=activation_function),
+            keras.layers.Dense(500, activation=activation_function),
+            keras.layers.Dense(64, activation=activation_function),
+            keras.layers.Dense(output_size, activation='softmax'),
+        ])
+
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
         return model
