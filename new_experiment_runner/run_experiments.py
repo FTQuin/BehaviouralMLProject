@@ -9,36 +9,57 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_11'
+EXPERIMENT_NAME = 'test_experiment_16'
 EXPERIMENT_PARAMS = [{'name': 'name_1',
-                      'batch_size': 16,
-                      'epochs': 15,
+                      'batch_size': 64,
+                      'epochs': 5,
                       },
                      {'name': 'name_2',
-                      'batch_size': 16,
-                      'epochs': 15,
+                      'batch_size': 64,
+                      'epochs': 5,
+                      },
+                     {'name': 'name_3',
+                      'batch_size': 64,
+                      'epochs': 5,
+                      },
+                     {'name': 'name_4',
+                      'batch_size': 64,
+                      'epochs': 5,
                       }
                      ]
 
 # DATA
-DATASETS_PARAMS = [(datasets.UCF.training, {'seq_len': 50, 'train_test_split': .75}),
-                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .75}),
+DATASETS_PARAMS = [(datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
+                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
+                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
+                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
                    ]
 
 # EXTRACTOR
-EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {}),
-                    (feature_extractors.MovenetExtractor, {}),
+EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
+                    (feature_extractors.MobileNetV2Extractor, {}),
+                    (feature_extractors.MobileNetV2Extractor, {}),
+                    (feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.GRU.gru2, {'activation_function': 'sigmoid',
-                                   'loss_function': 'sparse_categorical_crossentropy',
-                                   'optimizer': 'adam',
-                                   }),
-                (models.GRU.gru2, {'activation_function': 'relu',
-                                   'loss_function': 'sparse_categorical_crossentropy',
-                                   'optimizer': 'adam',
-                                   }),
+MODEL_PARAMS = [
+                (models.LSTM.lstm2, {'activation_function': 'relu',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
+                (models.LSTM.lstm2, {'activation_function': 'sigmoid',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
+                (models.LSTM.lstm1, {'activation_function': 'relu',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
+                (models.LSTM.lstm1, {'activation_function': 'sigmoid',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
                 ]
 
 
@@ -55,12 +76,11 @@ def train_model(model, dataset, experiment_params, idx):
                                                           update_freq='epoch',)
 
     out = model.fit(
-        dataset.dataset,
-        # validation_data=(dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len']),
-        #                  dataset.get_train_labels()),
+        dataset.train_dataset,
+        validation_data=dataset.dataset_validation,
         epochs=experiment_params['epochs'],
         batch_size=experiment_params['batch_size'],
-        callbacks=[tensorboard_callback]
+        callbacks=[tensorboard_callback],
     )
     return out
 
