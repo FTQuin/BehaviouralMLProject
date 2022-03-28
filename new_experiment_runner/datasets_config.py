@@ -1,4 +1,6 @@
 import os
+
+import pandas
 import tensorflow as tf
 import cv2
 import numpy as np
@@ -74,64 +76,39 @@ class UCF:
         def __init__(self, extractor, train_test_split=.75, file_name='features'):
             super(UCF.training, self).__init__(UCF.dataset_name, extractor, train_test_split)
 
-            # self.ds = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*'))
-            # for f in self.ds.take(5):
-            #     print(f.numpy())
-            #
-            # def process_path(file_path):
-            #     label = tf.strings.split(file_path, os.sep)[-1]
-            #     return tf.data.Dataset.from_tensor_slices(), label
-            #
-            # self.labeled_ds = self.ds.map(process_path)
+            dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
+            self.labels = list(os.walk(self.features_save_path))[0][1]
 
-            features_dir = '../features/' + UCF.dataset_name +'/'+ extractor.name
-            features_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(features_dir)]
-            features_paths = [(os.path.split(label_tup[0])[1], os.path.join(label_tup[0], vid_path))
-                              for label_tup in features_paths[1:] for vid_path in label_tup[1]]
-            # load into pandas df
-            self.feature_paths = pd.DataFrame(features_paths, columns=['label', 'feature_path'])
+            def process_path(file_path):
+                def sub(fp):
+                    df = pd.read_csv(fp.numpy().decode('utf-8'))
+                    label = self.labels.index(df['label'].values[0])
+                    df = df.drop(['video', 'label', 'frame', 'Unnamed: 0'], axis=1)
+                    arr = df.to_numpy()
+                    return tf.convert_to_tensor(arr, dtype='float32'), tf.convert_to_tensor([label]*len(arr), dtype='float32')
 
-            train_vids = pd.Series(self.feature_paths['feature_path'].unique()).sample(frac=train_test_split)
-            self.train_data = self.feature_paths.loc[self.feature_paths['feature_path'].isin(train_vids)]
-            self.train_labels = self.train_data.groupby('feature_path')['label'].first().values
-            self.test_data = self.feature_paths.loc[~self.feature_paths['feature_path'].isin(train_vids)]
-            self.test_labels = self.test_data.groupby('feature_path')['label'].first().values
+                res, labels = tf.py_function(
+                    sub,
+                    [file_path],
+                    [tf.TensorSpec(shape=[None, 1280], dtype=tf.dtypes.float32),
+                     tf.TensorSpec(shape=[1280], dtype=tf.dtypes.float32)])
+                res.set_shape([None, 1280])
+                labels.set_shape([None])
 
-        def get_train_data(self, seq_len):
-            return self._get_data(self.train_data, seq_len)
+                ds = tf.data.Dataset.from_tensor_slices(res)
+                ds = tf.data.Dataset.zip((ds, tf.data.Dataset.from_tensor_slices(labels)))
 
-        def get_train_labels(self):
-            return self._get_labels(self.train_labels)
+                ds = ds.window(40, shift=1, drop_remainder=True)
+                ds = ds.shuffle(buffer_size=1000)
+                ds = ds.flat_map(lambda x, y: tf.data.Dataset.zip((x.batch(40), y.batch(1))))
 
-        def get_test_data(self, seq_len):
-            return self._get_data(self.test_data, seq_len)
+                return ds
+            dataset = dataset.interleave(process_path)
 
-        def get_test_labels(self):
-            return self._get_labels(self.test_labels)
+            dataset = dataset.shuffle(buffer_size=1000)
+            dataset = dataset.batch(64)
 
-        def _get_data(self, df, seq_len):
-            def prepare_row(f):
-                # drop non-feature columns
-                g = f.drop(['video', 'label', 'frame'], axis=1)
-                arr = g.to_numpy()
-
-                # get random starting point
-                start = np.random.randint((len(arr) - seq_len + 1) if len(arr) > seq_len else 1)
-                arr = arr[start:start + seq_len]
-
-                # pad with 0s
-                out = np.zeros((seq_len, self.extractor.num_features))
-                out[seq_len - len(arr):] = arr
-                return out
-
-            feat_arr = np.array(list(df.groupby('video').apply(prepare_row)))
-            return feat_arr
-
-        def _get_labels(self, df):
-            classes = np.unique(df)
-            pos = list(map(lambda x: np.where(classes == x)[0][0], df))
-            out = np.array(pos).reshape(-1, 1)
-            return out
+            self.dataset = dataset
 
 
 class NTU:

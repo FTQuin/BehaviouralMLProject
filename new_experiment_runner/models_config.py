@@ -61,10 +61,10 @@ class LSTM:
     @staticmethod
     def lstm2(input_shape, output_size, seq_len, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
-        frame_features_input = (seq_len, input_shape)
+        # frame_features_input = (seq_len, input_shape)
         model = keras.Sequential(
             [
-                keras.layers.LSTM(256, input_shape=frame_features_input, return_sequences=True),
+                keras.layers.LSTM(256, return_sequences=True),
                 keras.layers.LSTM(128),
                 keras.layers.Dropout(0.4),
                 keras.layers.Dense(256, activation=activation_function),

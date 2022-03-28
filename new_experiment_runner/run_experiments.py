@@ -31,12 +31,12 @@ EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
+MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 40,
                                      'activation_function': 'sigmoid',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
-                (models.LSTM.lstm1, {'seq_len': 100,
+                (models.GRU.gru2, {'seq_len': 40,
                                      'activation_function': 'relu',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
@@ -45,8 +45,7 @@ MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
 
 
 def train_model(model, dataset, experiment_params, idx):
-    x = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
-    y = dataset.get_train_labels()
+    # train_iter = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
 
     log_dir = os.path.join('../saved_experiments',
                            EXPERIMENT_NAME,
@@ -58,9 +57,9 @@ def train_model(model, dataset, experiment_params, idx):
                                                           update_freq='epoch',)
 
     out = model.fit(
-        x, y,
-        validation_data=(dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len']),
-                         dataset.get_train_labels()),
+        dataset.dataset,
+        # validation_data=(dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len']),
+        #                  dataset.get_train_labels()),
         epochs=experiment_params['epochs'],
         batch_size=experiment_params['batch_size'],
         callbacks=[tensorboard_callback]
