@@ -9,24 +9,24 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_10'
+EXPERIMENT_NAME = 'test_experiment_11'
 EXPERIMENT_PARAMS = [{'name': 'name_1',
                       'batch_size': 16,
-                      'epochs': 150,
+                      'epochs': 15,
                       },
                      {'name': 'name_2',
                       'batch_size': 16,
-                      'epochs': 150,
+                      'epochs': 15,
                       }
                      ]
 
 # DATA
-DATASETS_PARAMS = [(datasets.UCF.training, {'train_test_split': .75}),
-                   (datasets.UCF.training, {'train_test_split': .75}),
+DATASETS_PARAMS = [(datasets.UCF.training, {'seq_len': 50, 'train_test_split': .75}),
+                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .75}),
                    ]
 
 # EXTRACTOR
-EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
+EXTRACTOR_PARAMS = [(feature_extractors.MovenetExtractor, {}),
                     (feature_extractors.MovenetExtractor, {}),
                     ]
 
