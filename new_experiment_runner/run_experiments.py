@@ -31,16 +31,14 @@ EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.GRU.gru2, {'seq_len': 40,
-                                     'activation_function': 'sigmoid',
-                                     'loss_function': 'sparse_categorical_crossentropy',
-                                     'optimizer': 'adam',
-                                     }),
-                (models.GRU.gru2, {'seq_len': 40,
-                                     'activation_function': 'relu',
-                                     'loss_function': 'sparse_categorical_crossentropy',
-                                     'optimizer': 'adam',
-                                     }),
+MODEL_PARAMS = [(models.GRU.gru2, {'activation_function': 'sigmoid',
+                                   'loss_function': 'sparse_categorical_crossentropy',
+                                   'optimizer': 'adam',
+                                   }),
+                (models.GRU.gru2, {'activation_function': 'relu',
+                                   'loss_function': 'sparse_categorical_crossentropy',
+                                   'optimizer': 'adam',
+                                   }),
                 ]
 
 
@@ -125,7 +123,7 @@ if __name__ == '__main__':
         # init based on hyper parameters
         extractor = extractor_params[0](**extractor_params[1])  # get extractor
         dataset = data_params[0](**data_params[1], extractor=extractor)  # get data
-        model = model_params[0](input_shape=extractor.num_features, output_size=3, **model_params[1])  # get model
+        model = model_params[0](output_size=3, **model_params[1])  # get model
 
         train_model(model, dataset, experiment_params, idx)  # train model
         # test_model(model, dataset, experiment_params)  # evaluate model
