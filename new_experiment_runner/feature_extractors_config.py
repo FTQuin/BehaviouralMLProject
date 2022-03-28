@@ -52,7 +52,7 @@ class MovenetExtractor(ExtractorAbstract):
         return tf.reshape(out, (1, -1))  # flatten
 
     def live_extract(self, frame):
-        t1 = self.extract_frame(frame)
+        t1 = self.extract_frame(tf.expand_dims(frame, axis=0))
         t2 = self.train_extract(t1)
         return t2
 
