@@ -102,10 +102,11 @@ class UCF:
                 ds = tf.data.Dataset.zip((ds, tf.data.Dataset.from_tensor_slices(labels)))
 
                 ds = ds.window(self.seq_len, shift=1, drop_remainder=True)
-                ds = ds.shuffle(buffer_size=1000)
+                # ds = ds.shuffle(buffer_size=1000)
                 ds = ds.flat_map(lambda x, y: tf.data.Dataset.zip((x.batch(self.seq_len), y.batch(1))))
 
                 return ds
+
             dataset = dataset.interleave(process_path)
 
             dataset = dataset.shuffle(buffer_size=1000)
