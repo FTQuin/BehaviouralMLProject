@@ -1,53 +1,20 @@
 import os
 
-import pandas
 import tensorflow as tf
 import cv2
 import numpy as np
 import pandas as pd
 
 
-class preprocessingAbstract:
-    def __init__(self, dataset_name, extractor):
-        self.dataset_name = dataset_name
-        self.extractor = extractor
-        self.features_save_path = os.path.abspath(os.path.join('../features', self.dataset_name, extractor.name))
+class Dataset:
+    class Preprocessing:
+        def __init__(self, dataset_path, extractor):
+            self.extractor = extractor
 
-        self._raw_data_path = os.path.abspath(os.path.join('../datasets', self.dataset_name))
-
-    @staticmethod
-    def _load_video(path):
-        frames = []
-        cap = cv2.VideoCapture(path)
-        try:
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frame = frame[:, :, [2, 1, 0]]
-                frame = frame.astype('int32')
-                frames.append(frame)
-        finally:
-            cap.release()
-        return np.array(frames)
-
-
-class trainingAbstract:
-    def __init__(self, dataset_name, extractor, seq_len, train_test_split):
-        self.dataset_name = dataset_name
-        self.extractor = extractor
-        self.seq_len = seq_len
-        self.features_save_path = os.path.abspath(os.path.join('../features', self.dataset_name, self.extractor.name))
-
-        self.train_test_split = train_test_split
-
-
-class UCF:
-    dataset_name = 'UCF-101'
-
-    class preprocessing(preprocessingAbstract):
-        def __init__(self, extractor):
-            super(UCF.preprocessing, self).__init__(UCF.dataset_name, extractor)
+            self._raw_data_path = os.path.abspath(dataset_path)
+            self.features_save_path = os.path.abspath(os.path.join('../features',
+                                                                   os.path.split(dataset_path)[-1],
+                                                                   extractor.name))
 
             # get video paths
             self._video_labels_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(self._raw_data_path)]
@@ -71,18 +38,46 @@ class UCF:
                         return {'label': x[0], 'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
                     else:
                         raise StopIteration
+
+            # return iterator
             self.data_iterator = iter(VideoIterator(self._video_labels_paths))
 
-    class training(trainingAbstract):
-        def __init__(self, extractor, seq_len, train_test_split=.75):
-            super(UCF.training, self).__init__(UCF.dataset_name, extractor, seq_len, train_test_split)
+        @staticmethod
+        def _load_video(path):
+            frames = []
+            cap = cv2.VideoCapture(path)
+            try:
+                while True:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+                    frame = frame[:, :, [2, 1, 0]]
+                    frame = frame.astype('int32')
+                    frames.append(frame)
+            finally:
+                cap.release()
+            return np.array(frames)
 
-            # try: os.mkdir('./.cache')  # make dir to save caches
-            # except FileExistsError: pass
+    class Training:
+        def __init__(self, dataset_path, extractor, seq_len, train_test_split=.75, enable_caching=False):
+            self.extractor = extractor
+            self.seq_len = seq_len
+            self.train_test_split = train_test_split
 
-            self.labels = list(os.walk(self.features_save_path))[0][1]
+            self._raw_data_path = os.path.abspath(dataset_path)
+            self._features_save_path = os.path.abspath(os.path.join('../features',
+                                                                    os.path.split(dataset_path)[-1],
+                                                                    extractor.name))
+            self.labels = list(os.walk(self._features_save_path))[0][1]
 
-            dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
+            # ==== CREATE DATASET ====
+            # make dir to save caches
+            if enable_caching:
+                cache_path = os.path.join(self._features_save_path, '.cache')
+                try: os.mkdir(cache_path)
+                except FileExistsError: pass
+
+            dataset = tf.data.Dataset.list_files(os.path.join(self._features_save_path, '*/*.zip'))
             dataset = dataset.shuffle(10000000, seed=1)
 
             def process_path(file_path):
@@ -114,49 +109,15 @@ class UCF:
 
             dataset = dataset.shuffle(buffer_size=1000, seed=1)
 
-            split = round(1/(1-self.train_test_split))
-            dataset_train = dataset.window(split, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
-            dataset_validation = dataset.skip(split).window(1, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
+            split = round(1/(1-self.train_test_split))  # put every nth example in validation split
+            train_dataset = dataset.window(split, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
+            validation_dataset = dataset.skip(split).window(1, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
 
-            self.train_dataset = dataset_train.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
+            self.train_dataset = train_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
-            self.dataset_validation = dataset_validation.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
+            self.validation_dataset = validation_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
 
-
-class NTU:
-    dataset_name = 'NTU'
-    __video_labels_paths = None
-
-    def data_iterator(self):
-        if not self._data_iterator:
-            class VideoIterator:
-                def __init__(self_iter, vlp):
-                    self_iter.video_labels_paths = vlp
-
-                def __iter__(self_iter):
-                    self_iter.video_index = 0
-                    return self_iter
-
-                def __next__(self_iter):
-                    # TODO: uncomment
-                    # if self_iter.video_index < len(video_labels_paths):
-                    if self_iter.video_index < 20:
-                        x = self_iter.video_labels_paths[self_iter.video_index]
-                        self_iter.video_index += 1
-                        return {'label': x[0], 'frames': self._load_video(x[1]), 'name': os.path.split(x[1])[-1]}
-                    else:
-                        raise StopIteration
-
-            self._data_iterator = iter(VideoIterator(self._video_labels_paths()))
-        # end_if
-        return self._data_iterator
-
-    def _video_labels_paths(self):
-        if not self.__video_labels_paths:
-            # get video paths
-            self.__video_labels_paths = [(curr_path, files) for curr_path, sub_dirs, files in os.walk(self.raw_data_path())]
-            self.__video_labels_paths = [(os.path.split(label_tup[0])[1], os.path.join(label_tup[0], vid_path)) for label_tup
-                                  in self.__video_labels_paths[1:] for vid_path in label_tup[1]]
-
-        return self.__video_labels_paths
+            if enable_caching:
+                self.train_dataset = self.train_dataset.cache(cache_path)
+                self.validation_dataset = self.validation_dataset.cache(cache_path)

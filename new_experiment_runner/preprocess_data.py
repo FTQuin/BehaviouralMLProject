@@ -3,22 +3,20 @@
 :Author: Quin Adam
 :Description: Extracts features from a frame
 """
-import multiprocessing as mp
 import os
 
 import pandas as pd
 import tensorflow as tf
 
-import feature_extractors_config
+import feature_extractors_config as fec
 import datasets_config
 
-# Modifiable Params
-FEATURE_EXTRACTOR_CONFIG = feature_extractors_config.MobileNetV2Extractor
-DATASET_CONFIG = datasets_config.UCF
+# ==== MODIFIABLE PARAMS ====
+FEATURE_EXTRACTOR = fec.MobileNetV2Extractor()
+DATASET_PATH = '../datasets/UCF-3'
 
-# init configs
-feature_extractor = FEATURE_EXTRACTOR_CONFIG()
-dataset = DATASET_CONFIG.preprocessing(feature_extractor)
+# init dataset
+dataset = datasets_config.Dataset.Preprocessing(DATASET_PATH, FEATURE_EXTRACTOR)
 
 
 # extract features from videos
@@ -40,12 +38,10 @@ def prepare_all_videos():
         print(f'Extracted features from video {idx}')
 
         # make dir for video
-        try:
-            os.makedirs(os.path.join(dataset.features_save_path, video_frame_features['label'][0]))
-        except:
-            pass
+        try: os.makedirs(os.path.join(dataset.features_save_path, video_frame_features['label'][0]))
+        except FileExistsError: pass
 
-            # save features
+        # save features
         video_frame_features.to_csv(os.path.join(dataset.features_save_path, video_frame_features['label'][0],
                                                  video_frame_features['video'][0].replace('.avi', '.zip')),
                                     compression=dict(method='zip',
@@ -58,7 +54,7 @@ def prepare_all_videos():
 def prepare_one_video(video_info):
     frames = video_info['frames']
 
-    res = feature_extractor.pre_process_extract_video(frames)
+    res = FEATURE_EXTRACTOR.pre_process_extract_video(frames)
     res = tf.reshape(res, (res.shape[0], -1))
     temp_frame_features = pd.DataFrame(data=res.numpy())
 
