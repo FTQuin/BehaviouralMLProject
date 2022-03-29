@@ -4,3 +4,5 @@
 /sphinx/
 /docs/doctrees
 /docs/html/_sources
+/docs/html/objects.inv
+/docs/html/.buildinfo
