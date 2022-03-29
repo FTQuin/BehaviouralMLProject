@@ -59,8 +59,6 @@ def train_model(model, dataset, experiment_params, idx):
         dataset.train_dataset,
         validation_data=dataset.dataset_validation,
         epochs=experiment_params['epochs'],
-        steps_per_epoch=100,
-        validation_steps=10,
         batch_size=experiment_params['batch_size'],
         callbacks=[tensorboard_callback],
     )
