@@ -52,10 +52,16 @@ MODEL_PARAMS = [
 
 
 def train_model(model, dataset, experiment_params):
-    log_dir = os.path.join('../saved_experiments',
-                           EXPERIMENT_NAME,
-                           'logs/fit/',
+    experiment_dir = os.path.join('../saved_experiments', EXPERIMENT_NAME)
+
+    log_dir = os.path.join(experiment_dir, 'logs/fit/',
                            experiment_params['name'] + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+    save_model_callback = tf.keras.callbacks.ModelCheckpoint(os.path.join(experiment_dir, experiment_params['name']),
+                                                             monitor='val_loss',
+                                                             verbose=1,
+                                                             save_best_only=True,
+                                                             options=None,)
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
                                                           histogram_freq=1,
@@ -66,7 +72,7 @@ def train_model(model, dataset, experiment_params):
         validation_data=dataset.validation_dataset,
         epochs=experiment_params['epochs'],
         batch_size=experiment_params['batch_size'],
-        callbacks=[tensorboard_callback],
+        callbacks=[tensorboard_callback, save_model_callback],
     )
     return out
 
