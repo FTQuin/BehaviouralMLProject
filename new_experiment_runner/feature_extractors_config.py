@@ -29,7 +29,7 @@ class MovenetExtractor(ExtractorAbstract):
         super(MovenetExtractor, self).__init__(MovenetExtractor.num_features, MovenetExtractor.name)
 
         # get movenet
-        self.model = tf.saved_model.load('../movenet/movenet_multipose_lightning_1')  # keep ref to model
+        self.model = tf.saved_model.load('movenet/movenet_multipose_lightning_1')  # keep ref to model
         self.movenet = self.model.signatures['serving_default']
 
         # threshold when outputting features

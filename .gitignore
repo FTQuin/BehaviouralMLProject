@@ -1,12 +1,3 @@
-/datasets/UCF-3/
-/TFlite-NN/logs/
-/TFlite-NN/tmp/
-/TFlite-NN/.ipynb_checkpoints/
-.idea
-/new_experiment_runner/__pycache__/
-/TFlite-NN/processed_features/
-/datasets/NTU/NTU-Data/
-/datasets/NTU/dummy_data/
-/TFlite-NN/models/
+/datasets/
 /.idea/
-/.idea/
+/saved_experiments/
