@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-import numpy as np
 import tensorflow as tf
 
 import models_config as models
@@ -10,20 +9,20 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_7'
-EXPERIMENT_PARAMS = [{'name': 'name_1',
-                      'batch_size': 16,
-                      'epochs': 10,
+EXPERIMENT_NAME = 'mobilenet_experiments_1'
+EXPERIMENT_PARAMS = [{'name': 'gru',
+                      'batch_size': 64,
+                      'epochs': 5,
                       },
-                     {'name': 'name_2',
-                      'batch_size': 32,
-                      'epochs': 10,
-                      }
+                     {'name': 'lstm',
+                      'batch_size': 64,
+                      'epochs': 5,
+                      },
                      ]
 
 # DATA
-DATASETS_PARAMS = [(datasets.UCF.training, {'train_test_split': .75}),
-                   (datasets.UCF.training, {'train_test_split': .75}),
+DATASETS_PARAMS = [(datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
+                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
                    ]
 
 # EXTRACTOR
@@ -32,13 +31,12 @@ EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
-MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
-                                     'activation_function': 'relu',
+MODEL_PARAMS = [
+                (models.GRU.gru2, {'activation_function': 'relu',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
-                (models.LSTM.lstm1, {'seq_len': 30,
-                                     'activation_function': 'sigmoid',
+                (models.LSTM.lstm2, {'activation_function': 'relu',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
@@ -46,23 +44,25 @@ MODEL_PARAMS = [(models.LSTM.lstm1, {'seq_len': 100,
 
 
 def train_model(model, dataset, experiment_params, idx):
-    x = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
-    y = dataset.get_train_labels()
+    # train_iter = dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len'])
 
     log_dir = os.path.join('../saved_experiments',
                            EXPERIMENT_NAME,
                            'logs/fit/',
                            experiment_params['name'] + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                          histogram_freq=1,
+                                                          update_freq='epoch',)
 
     out = model.fit(
-        x, y,
-        validation_data=(dataset.get_train_data(MODEL_PARAMS[idx][1]['seq_len']),
-                         dataset.get_train_labels()),
+        dataset.train_dataset,
+        validation_data=dataset.dataset_validation,
         epochs=experiment_params['epochs'],
+        steps_per_epoch=100,
+        validation_steps=10,
         batch_size=experiment_params['batch_size'],
-        callbacks=[tensorboard_callback]
+        callbacks=[tensorboard_callback],
     )
     return out
 
@@ -73,7 +73,9 @@ def test_model(model, dataset, experiment_params):
 
     dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, 'logs/eval/')
     logdir = dir_path + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir,
+                                                          histogram_freq=1,
+                                                          profile_batch='500,520')
 
     out = model.evaluate(
         x, y,
@@ -83,8 +85,8 @@ def test_model(model, dataset, experiment_params):
     return out
 
 
-def save_model(model, extractor, idx):
-    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, str(idx))
+def save_model(model, extractor, experiment_params, idx):
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, str(idx)+'_'+experiment_params['name'])
     try:
         os.mkdir(dir_path)
     except:
@@ -123,12 +125,12 @@ if __name__ == '__main__':
         # init based on hyper parameters
         extractor = extractor_params[0](**extractor_params[1])  # get extractor
         dataset = data_params[0](**data_params[1], extractor=extractor)  # get data
-        model = model_params[0](input_shape=extractor.num_features, output_size=3, **model_params[1])  # get model
+        model = model_params[0](output_size=len(dataset.labels), **model_params[1])  # get model
 
         train_model(model, dataset, experiment_params, idx)  # train model
         # test_model(model, dataset, experiment_params)  # evaluate model
 
-        save_model(model, extractor, idx)  # save model
+        save_model(model, extractor, experiment_params, idx)  # save model
         models.append(model)
 
     save_results(models)  # save results

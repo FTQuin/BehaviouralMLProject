@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from abc import abstractmethod
 
@@ -8,17 +9,16 @@ class ExtractorAbstract:
         self.name = name
 
     @abstractmethod
-    def pre_process_extract(self, frames):
+    def pre_process_extract_video(self, frames):
         pass
 
     @abstractmethod
     def train_extract(self, features):
         pass
 
-    def live_extract(self, frames):
-        raw_features = self.pre_process_extract(frames)
-        processed_features = self.train_extract(raw_features)
-        return processed_features
+    @abstractmethod
+    def live_extract(self, frame):
+        pass
 
 
 class MovenetExtractor(ExtractorAbstract):
@@ -35,26 +35,33 @@ class MovenetExtractor(ExtractorAbstract):
         # threshold when outputting features
         self.threshold = threshold
 
-    @tf.function(input_signature=(tf.TensorSpec(shape=[1, None, None, 3], dtype='int32'),))
-    def pre_process_extract(self, frames):
-        t1 = tf.image.resize_with_pad(frames, 256, 256)  # resize and pad
+    def extract_frame(self, frame):
+        t1 = tf.image.resize_with_pad(frame, 256, 256)  # resize and pad
         t2 = tf.cast(t1, dtype=tf.int32)  # cast to int32
-        out = self.movenet(t2)['output_0']  # get result
-        return out
+        return self.movenet(t2)['output_0']  # get result
 
-    @tf.function(input_signature=(tf.TensorSpec(shape=[1, 6, 56], dtype='float32'),))
+    def pre_process_extract_video(self, frames):
+        return tf.map_fn(self.extract_frame, tf.expand_dims(frames, axis=1),
+                         fn_output_signature=tf.TensorSpec((1, 6, 56)),
+                         )
+
     def train_extract(self, features):
         # zero out vals below threshold
         cond = tf.less(features, tf.constant(self.threshold, dtype=features.dtype))
         out = tf.where(cond, tf.zeros(tf.shape(features), dtype=features.dtype), features)
         return tf.reshape(out, (1, -1))  # flatten
 
+    def live_extract(self, frame):
+        t1 = self.extract_frame(tf.expand_dims(frame, axis=0))
+        t2 = self.train_extract(t1)
+        return t2
+
 
 class InceptionExtractor(ExtractorAbstract):
     num_features = 2048
     name = "InceptionExtractor"
 
-    def __init__(self, img_size=256):
+    def __init__(self, img_size):
         super(InceptionExtractor, self).__init__(InceptionExtractor.num_features, InceptionExtractor.name)
         self.feature_extractor = tf.keras.applications.InceptionV3(
             weights="imagenet",
@@ -62,10 +69,17 @@ class InceptionExtractor(ExtractorAbstract):
             pooling="avg",
         )
 
-    def pre_process_extract(self, frames):
-        preprocess_input = tf.keras.applications.inception_v3.preprocess_input(tf.cast(frames, dtype='float32'))
-        output = self.feature_extractor(preprocess_input)
-        return output
+    def pre_process_extract_video(self, frames, batch_size=32):
+        batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
+        out = None
+        for batch in batches:
+            pre = tf.keras.applications.InceptionV3.preprocess_input(tf.cast(batch, dtype='float32'))
+            res = self.feature_extractor(pre)
+            if out is not None:
+                out = tf.concat([res, out], axis=0)
+            else:
+                out = res
+        return out
 
     def train_extract(self, features):
         return features
@@ -78,23 +92,37 @@ class MobileNetV2Extractor(ExtractorAbstract):
     def __init__(self, img_size=224):
         super(MobileNetV2Extractor, self).__init__(MobileNetV2Extractor.num_features, MobileNetV2Extractor.name)
         self.feature_extractor = tf.keras.applications.MobileNetV2(
+            # (img_size, img_size, 3),
             weights="imagenet",
             include_top=False,
             pooling="avg",
         )
 
-    def pre_process_extract(self, frames):
-        pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(frames, dtype='float32'))
-        out = self.feature_extractor(pre)
+    def pre_process_extract_video(self, frames, batch_size=32):
+        batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
+        out = None
+        for batch in batches:
+            pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(batch, dtype='float32'))
+            res = self.feature_extractor(pre)
+            if out is not None:
+                out = tf.concat([res, out], axis=0)
+            else:
+                out = res
         return out
 
     def train_extract(self, features):
         return features
+
+    def live_extract(self, frame):
+        t1 = tf.expand_dims(frame, axis=0)
+        t2 = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(t1, dtype='float32'))
+        out = self.feature_extractor(t2)
+        return out
 
 
 if __name__ == '__main__':
     img = tf.io.decode_jpeg(tf.io.read_file('../TFlite-NN/images/image.jpeg'))
     img = tf.expand_dims(img, axis=0)
     movenet = MovenetExtractor()
-    res = movenet.pre_process_extract(img)
+    res = movenet.pre_process_extract_video(img)
     print(res.shape)
