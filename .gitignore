@@ -1,3 +1,6 @@
 /datasets/
 /.idea/
 /saved_experiments/
+/sphinx/
+/docs/doctrees
+/docs/html/_sources
