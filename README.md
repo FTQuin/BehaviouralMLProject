@@ -59,7 +59,7 @@ MobilenetV2Extractor if you would like to try without processing your own data *
 
 2. Once the dataset has been processed, add your folder to the **datasets** directory
 
-![Dataset Image Example](./readme_images/dataset_example.png "Dataset Example" )
+![Dataset Image Example](docs/readme_images/dataset_example.png "Dataset Example" )
 
 3. Go to preprocess_data.py
  - **Modifiable Parameters**
@@ -74,7 +74,7 @@ MobilenetV2Extractor if you would like to try without processing your own data *
  - Once you have chosen your parameters simply run the file and it will create a folder with the extracted features 
 under the **features** directory
 
-![Extracted Features Image Example](./readme_images/features_example.png "Dataset Example" )
+![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
 
  - Inside of your features folder you will have the folder name for the extractor that was used, the folders
 for each action label and zip files containing the extracted features in a csv
@@ -89,7 +89,7 @@ and follow the steps in quickstart
 2. To create a new model create a new function and have it return a keras model
     - set model hyperparameters as inputs to the function
 
-![Model Config Image Example](./readme_images/model_example.png "Model Example" ) 
+![Model Config Image Example](docs/readme_images/model_example.png "Model Example" ) 
 
 ## Adding new Dataset
 1. Add the raw data to the datasets directory
