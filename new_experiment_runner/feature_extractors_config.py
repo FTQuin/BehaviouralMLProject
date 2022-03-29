@@ -63,22 +63,23 @@ class InceptionExtractor(ExtractorAbstract):
 
     def __init__(self, img_size):
         super(InceptionExtractor, self).__init__(InceptionExtractor.num_features, InceptionExtractor.name)
-        feature_extractor = tf.keras.applications.InceptionV3(
+        self.feature_extractor = tf.keras.applications.InceptionV3(
             weights="imagenet",
             include_top=False,
             pooling="avg",
-            input_shape=(img_size, img_size, 3),
         )
-        preprocess_input = tf.keras.applications.inception_v3.preprocess_input
 
-        inputs = tf.keras.Input((img_size, img_size, 3))
-        preprocessed = preprocess_input(inputs)
-
-        outputs = feature_extractor(preprocessed)
-        self.model = tf.keras.Model(inputs, outputs)
-
-    def pre_process_extract_video(self, frames):
-        return self.model(frames)
+    def pre_process_extract_video(self, frames, batch_size=32):
+        batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
+        out = None
+        for batch in batches:
+            pre = tf.keras.applications.InceptionV3.preprocess_input(tf.cast(batch, dtype='float32'))
+            res = self.feature_extractor(pre)
+            if out is not None:
+                out = tf.concat([res, out], axis=0)
+            else:
+                out = res
+        return out
 
     def train_extract(self, features):
         return features
@@ -113,8 +114,10 @@ class MobileNetV2Extractor(ExtractorAbstract):
         return features
 
     def live_extract(self, frame):
-        pre = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(frame, dtype='float32'))
-        out = self.feature_extractor(pre)
+        t1 = tf.expand_dims(frame, axis=0)
+        t2 = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(t1, dtype='float32'))
+        out = self.feature_extractor(t2)
+        return out
 
 
 if __name__ == '__main__':

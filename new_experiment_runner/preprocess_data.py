@@ -13,7 +13,6 @@ import feature_extractors_config
 import datasets_config
 
 # Modifiable Params
-FILE_NAME = 'features_101'
 FEATURE_EXTRACTOR_CONFIG = feature_extractors_config.MobileNetV2Extractor
 DATASET_CONFIG = datasets_config.UCF
 

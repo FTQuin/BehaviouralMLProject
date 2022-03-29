@@ -77,6 +77,9 @@ class UCF:
         def __init__(self, extractor, seq_len, train_test_split=.75):
             super(UCF.training, self).__init__(UCF.dataset_name, extractor, seq_len, train_test_split)
 
+            # try: os.mkdir('./.cache')  # make dir to save caches
+            # except FileExistsError: pass
+
             self.labels = list(os.walk(self.features_save_path))[0][1]
 
             dataset = tf.data.Dataset.list_files(os.path.join(self.features_save_path, '*/*.zip'))
@@ -116,9 +119,9 @@ class UCF:
             dataset_validation = dataset.skip(split).window(1, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
 
             self.train_dataset = dataset_train.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
-                .prefetch(tf.data.AUTOTUNE).cache('./cache.tfcache')
+                .prefetch(tf.data.AUTOTUNE)
             self.dataset_validation = dataset_validation.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
-                .prefetch(tf.data.AUTOTUNE).cache('./cache.tfcache')
+                .prefetch(tf.data.AUTOTUNE)
 
 
 class NTU:

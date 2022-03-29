@@ -9,54 +9,34 @@ import feature_extractors_config as feature_extractors
 # import tensorflow as tf
 
 # EXPERIMENT
-EXPERIMENT_NAME = 'test_experiment_16'
-EXPERIMENT_PARAMS = [{'name': 'name_1',
+EXPERIMENT_NAME = 'mobilenet_experiments_1'
+EXPERIMENT_PARAMS = [{'name': 'gru',
                       'batch_size': 64,
                       'epochs': 5,
                       },
-                     {'name': 'name_2',
+                     {'name': 'lstm',
                       'batch_size': 64,
                       'epochs': 5,
                       },
-                     {'name': 'name_3',
-                      'batch_size': 64,
-                      'epochs': 5,
-                      },
-                     {'name': 'name_4',
-                      'batch_size': 64,
-                      'epochs': 5,
-                      }
                      ]
 
 # DATA
 DATASETS_PARAMS = [(datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
-                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
-                   (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
                    (datasets.UCF.training, {'seq_len': 50, 'train_test_split': .8}),
                    ]
 
 # EXTRACTOR
 EXTRACTOR_PARAMS = [(feature_extractors.MobileNetV2Extractor, {}),
                     (feature_extractors.MobileNetV2Extractor, {}),
-                    (feature_extractors.MobileNetV2Extractor, {}),
-                    (feature_extractors.MobileNetV2Extractor, {}),
                     ]
 
 # MODELS
 MODEL_PARAMS = [
+                (models.GRU.gru2, {'activation_function': 'relu',
+                                     'loss_function': 'sparse_categorical_crossentropy',
+                                     'optimizer': 'adam',
+                                     }),
                 (models.LSTM.lstm2, {'activation_function': 'relu',
-                                     'loss_function': 'sparse_categorical_crossentropy',
-                                     'optimizer': 'adam',
-                                     }),
-                (models.LSTM.lstm2, {'activation_function': 'sigmoid',
-                                     'loss_function': 'sparse_categorical_crossentropy',
-                                     'optimizer': 'adam',
-                                     }),
-                (models.LSTM.lstm1, {'activation_function': 'relu',
-                                     'loss_function': 'sparse_categorical_crossentropy',
-                                     'optimizer': 'adam',
-                                     }),
-                (models.LSTM.lstm1, {'activation_function': 'sigmoid',
                                      'loss_function': 'sparse_categorical_crossentropy',
                                      'optimizer': 'adam',
                                      }),
@@ -79,6 +59,8 @@ def train_model(model, dataset, experiment_params, idx):
         dataset.train_dataset,
         validation_data=dataset.dataset_validation,
         epochs=experiment_params['epochs'],
+        steps_per_epoch=100,
+        validation_steps=10,
         batch_size=experiment_params['batch_size'],
         callbacks=[tensorboard_callback],
     )
@@ -103,8 +85,8 @@ def test_model(model, dataset, experiment_params):
     return out
 
 
-def save_model(model, extractor, idx):
-    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, str(idx))
+def save_model(model, extractor, experiment_params, idx):
+    dir_path = os.path.join('../saved_experiments', EXPERIMENT_NAME, str(idx)+'_'+experiment_params['name'])
     try:
         os.mkdir(dir_path)
     except:
@@ -148,7 +130,7 @@ if __name__ == '__main__':
         train_model(model, dataset, experiment_params, idx)  # train model
         # test_model(model, dataset, experiment_params)  # evaluate model
 
-        save_model(model, extractor, idx)  # save model
+        save_model(model, extractor, experiment_params, idx)  # save model
         models.append(model)
 
     save_results(models)  # save results
