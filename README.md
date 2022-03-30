@@ -6,12 +6,12 @@ REQUIRED LIBRARIES
 - numpy
 - pandas
 
-requirements.txt provided in root folder
+requirements.txt provided
 ```pip install -r requirements.txt```
 
 # How to Use
 ## Quickstart
-** Example preprocessed video features available in feature directory, make usage of UCF-101 dataset and MovenetExtractor or 
+** Example preprocessed video features available in feature directory, make usage of UCF-101 or NTU dataset and MovenetExtractor or 
 MobilenetV2Extractor if you would like to try without processing your own data ** 
 1. Open run_experiments.py or run_experiments.ipynb
 - **Modifiable Parameters**
@@ -45,6 +45,39 @@ MobilenetV2Extractor if you would like to try without processing your own data *
 - Ensure other hyperparameters such as feature_extractor are the same as they were when the model was trained
 - Run the rest of the cells
 
+## Adding new Dataset
+1. Structure video datasets in the following format
+- Dataset_name
+    - action_label
+        - video_name1
+        - video_name2
+        - ...
+    - action_label2
+        - video_name1
+        - video_name2
+        - ...
+        
+![Dataset Image Example](docs/readme_images/dataset_example.png "Dataset Example" )
+
+
+## Processing Dataset
+1. Go to preprocess_data.py
+ - Once you have chosen your parameters simply run the file and it will create a folder with the extracted features 
+under the **features** directory
+ - **Modifiable Parameters**
+    - feature_extractors currently available from (feature_extractors_config.py) :
+        - MobileNetV2Extractor
+        - MovenetExtractor
+        - InceptionV3Extractor
+    - dataset_path 
+        - `../datasets/UCF-101`
+        - `../datasets/NTU`
+ 
+![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
+
+** If you do not wish to change model architecture or feature extractors, head to quickstart and follow
+instructions ** 
+
 ## Adding new Model Architecture
 1. open models_config.py
    - create a function that returns a model or modify existing models to your liking
@@ -66,33 +99,6 @@ def gru1(output_size, activation_function='relu',
     return model
 ```
 
-## Adding new Dataset
-1. Structure videos in the following directory format
-- Dataset_name
-    - action_label
-        - video1
-        - video2
-        - ...
-    - action_label2
-        - video1
-        - video2
-        - ...
-        
-![Dataset Image Example](docs/readme_images/dataset_example.png "Dataset Example" )
-
-2. Go to preprocess_data.py
- - Once you have chosen your parameters simply run the file and it will create a folder with the extracted features 
-under the **features** directory
- - **Modifiable Parameters**
-    - feature_extractors currently available from (feature_extractors_config.py) :
-        - MobileNetV2Extractor
-        - MovenetExtractor
-        - InceptionV3Extractor
-    - dataset_path 
-        - `../datasets/UCF-101`
-        - `../datasets/NTU`
- 
-![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
 
  - Inside of your features folder you will have the folder name for the extractor that was used, the folders
 for each action label and zip files containing the extracted features in a csv
@@ -103,3 +109,4 @@ for each action label and zip files containing the extracted features in a csv
      - any processing done to the raw data before extraction + extraction
    - live\_extract()
      - extraction method used for live inference
+
