@@ -7,7 +7,7 @@ REQUIRED LIBRARIES
 - pandas
 
 requirements.txt provided in root folder
-pip install -r requirements.txt
+```pip install -r requirements.txt```
 
 # How to Use
 ## Quickstart
