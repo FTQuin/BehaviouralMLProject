@@ -1,14 +1,27 @@
+"""
+:Date: 2022-02-28
+:Author: Quin Adam, Govind Tanda
+:Description: Module for extracting features from training examples and serving those features for training
+"""
 import os
 
 import tensorflow as tf
 import cv2
 import numpy as np
 import pandas as pd
+from feature_extractors_config import ExtractorAbstract
 
 
 class Dataset:
     class Preprocessing:
         def __init__(self, dataset_path, extractor):
+            """
+
+            :param dataset_path:
+            :type dataset_path:
+            :param extractor:
+            :type extractor:
+            """
             self.extractor = extractor
 
             self._raw_data_path = os.path.abspath(dataset_path)
