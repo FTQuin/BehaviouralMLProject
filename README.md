@@ -18,17 +18,14 @@ MobilenetV2Extractor if you would like to try without processing your own data *
     - **batch_size**
     - **epochs**
   - _DATASETS_PARAMS_:
-    - **dataset**: path of the original dataset
-    - Dataset hyperparameters
-      - **train\_test\_split**
-      - **seq_len**
+    - **dataset_path**: path of the original dataset
+    - **train\_test\_split**
+    - **seq_len**
   - _EXTRACTOR_PARAMS_:
     - **feature extractor** from feature\_extractors\_config.py
-      - feature_extractors currently available:
-          - MobileNetV2Extractor
-          - MovenetExtractor
-          - InceptionV3Extractor
-      - feature extractor params specific to that extractor, **ex**: movenet can take a **threshold value** {'threshold': 0.6}
+        - MobileNetV2Extractor
+        - MovenetExtractor
+        - InceptionV3Extractor
   - _MODEL_PARAMS_:
     - **model** from models\_config.py
     - model params specific to model
