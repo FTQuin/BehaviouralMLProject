@@ -1,7 +1,19 @@
+"""
+:Date: 2022-02-28
+:Author: Quin Adam, Govind Tanda
+:Description: Model classes for training
+"""
+
 from tensorflow import keras
 
 
 class GRU:
+    """
+    Class for GRU Models, create your gru model as a function or modify existing models
+
+    All methods return sequential GRU models
+    """
+
     @staticmethod
     def gru1(output_size, activation_function='relu',
              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
@@ -35,6 +47,12 @@ class GRU:
 
 
 class LSTM:
+    """
+    Class for LSTM Models, create your LSTM model as a function or modify existing models
+
+    All methods return sequential LSTM models
+    """
+
     @staticmethod
     def lstm1(output_size, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
