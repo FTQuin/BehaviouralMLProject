@@ -8,28 +8,28 @@ REQUIRED LIBRARIES
 
 # How to Use
 ## Quickstart
-** Preprocessed video features available in feature file, make usage of UCF-101 dataset and MovenetExtractor or 
+** Example preprocessed video features available in feature directory, make usage of UCF-101 dataset and MovenetExtractor or 
 MobilenetV2Extractor if you would like to try without processing your own data ** 
-1. Open run_experiments.py
+1. Open run_experiments.py or run_experiments.ipynb
 - **Modifiable Parameters**
-  - EXPERIMENT_NAME: name of experiment
-  - EXPERIMENT_PARAMS:
+  - _EXPERIMENT_NAME_: name of experiment
+  - _EXPERIMENT_PARAMS_:
     - **name**
     - **batch_size**
     - **epochs**
-  - DATASETS_PARAMS:
-    - **dataset** from datasets_config.py, **ex**: datasets.UCF
+  - _DATASETS_PARAMS_:
+    - **dataset**: path of the original dataset
     - Dataset hyperparameters
       - **train\_test\_split**
       - **seq_len**
-  - EXTRACTOR_PARAMS:
+  - _EXTRACTOR_PARAMS_:
     - **feature extractor** from feature\_extractors\_config.py
-      - feature_extractors currently available from (feature_extractors_config.py) :
+      - feature_extractors currently available:
           - MobileNetV2Extractor
           - MovenetExtractor
           - InceptionV3Extractor
-      - feature extractor params specific to that extractor, **ex**: movenet can take a **threshold value** {'threshold': 60}
-  - MODEL_PARAMS:
+      - feature extractor params specific to that extractor, **ex**: movenet can take a **threshold value** {'threshold': 0.6}
+  - _MODEL_PARAMS_:
     - **model** from models\_config.py
     - model params specific to model
       - **activation_function** 
@@ -45,8 +45,29 @@ MobilenetV2Extractor if you would like to try without processing your own data *
 - Ensure other hyperparameters such as feature_extractor are the same as they were when the model was trained
 - Run the rest of the cells
 
-## How to Use
-1. Preprocess raw videos into structured folder in the following format
+## Adding new Model Architecture
+1. open models_config.py
+   - create a function that returns a model or modify existing models to your liking
+
+```py
+@staticmethod
+def gru1(output_size, activation_function='relu',
+         loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+    model = keras.Sequential([
+        keras.layers.GRU(16, return_sequences=True),
+        keras.layers.GRU(8),
+        keras.layers.Dropout(0.4),
+        keras.layers.Dense(16, activation=activation_function),
+        keras.layers.Dense(8, activation=activation_function),
+        keras.layers.Dense(output_size, activation='softmax')
+    ])
+
+    model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
+    return model
+```
+
+## Adding new Dataset
+1. Structure videos in the following directory format
 - Dataset_name
     - action_label
         - video1
@@ -56,47 +77,26 @@ MobilenetV2Extractor if you would like to try without processing your own data *
         - video1
         - video2
         - ...
-
-2. Once the dataset has been processed, add your folder to the **datasets** directory
-
+        
 ![Dataset Image Example](docs/readme_images/dataset_example.png "Dataset Example" )
 
-3. Go to preprocess_data.py
+2. Go to preprocess_data.py
+ - Once you have chosen your parameters simply run the file and it will create a folder with the extracted features 
+under the **features** directory
  - **Modifiable Parameters**
     - feature_extractors currently available from (feature_extractors_config.py) :
         - MobileNetV2Extractor
         - MovenetExtractor
         - InceptionV3Extractor
     - dataset_path 
-        - UCF-101
-        - NTU
-        
- - Once you have chosen your parameters simply run the file and it will create a folder with the extracted features 
-under the **features** directory
-
+        - `../datasets/UCF-101`
+        - `../datasets/NTU`
+ 
 ![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
 
  - Inside of your features folder you will have the folder name for the extractor that was used, the folders
 for each action label and zip files containing the extracted features in a csv
 
-4. Once you have your extracted features, head to run_experiment.py file 
-and follow the steps in quickstart
-
-## Adding new Model Architecture
-1. open models_config.py
-   - File contains 2 classes of models, GRU or LSTMS
-   - In either class you can create a new model as a function or modify existing models to your liking
-2. To create a new model create a new function and have it return a keras model
-    - set model hyperparameters as inputs to the function
-
-![Model Config Image Example](docs/readme_images/model_example.png "Model Example" ) 
-
-## Adding new Dataset
-1. Add the raw data to the datasets directory
-2. Create class for dataset in datasets\_config.py
-   - create custom loading and saving methods
-
-3. run preprocess_data.py with the extractor you would like to use
 ## Adding new Feature Extractor
 1. Create a new class in feature\_extractors\_config.py which implements the **ExtractorAbstract** class
    - pre\_process\_features
