@@ -7,6 +7,9 @@
 import numpy as np
 import tensorflow as tf
 from abc import abstractmethod
+import os
+
+package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 class ExtractorAbstract:
@@ -55,7 +58,7 @@ class MovenetExtractor(ExtractorAbstract):
         super(MovenetExtractor, self).__init__(MovenetExtractor.num_features, MovenetExtractor.name)
 
         # get movenet
-        self.model = tf.saved_model.load('movenet/movenet_multipose_lightning_1')  # keep ref to model
+        self.model = tf.saved_model.load(os.path.join(package_directory, './movenet/movenet_multipose_lightning_1'))  # keep ref to model
         self.movenet = self.model.signatures['serving_default']
 
         # threshold when outputting features
@@ -174,11 +177,3 @@ class MobileNetV2Extractor(ExtractorAbstract):
         t2 = tf.keras.applications.mobilenet_v2.preprocess_input(tf.cast(t1, dtype='float32'))
         out = self.feature_extractor(t2)
         return out
-
-
-if __name__ == '__main__':
-    img = tf.io.decode_jpeg(tf.io.read_file('../TFlite-NN/images/image.jpeg'))
-    img = tf.expand_dims(img, axis=0)
-    movenet = MovenetExtractor()
-    res = movenet.pre_process_extract_video(img)
-    print(res.shape)
