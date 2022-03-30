@@ -6,6 +6,9 @@ REQUIRED LIBRARIES
 - numpy
 - pandas
 
+requirements.txt provided in root folder
+pip install -r requirements.txt
+
 # How to Use
 ## Quickstart
 ** Example preprocessed video features available in feature directory, make usage of UCF-101 dataset and MovenetExtractor or 
