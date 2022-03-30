@@ -96,9 +96,7 @@ for each action label and zip files containing the extracted features in a csv
 
 ## Adding new Feature Extractor
 1. Create a new class in feature\_extractors\_config.py which implements the **ExtractorAbstract** class
-   - pre\_process\_features
+   - pre\_process\_extract\_video()
      - any processing done to the raw data before extraction + extraction
-   - post\_process\_features
-     - any processing done to the features after extraction
-   - live\_extract
+   - live\_extract()
      - extraction method used for live inference
