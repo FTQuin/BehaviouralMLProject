@@ -1,7 +1,7 @@
 """
 :Date: 2022-02-28
 :Author: Quin Adam, Govind Tanda
-:Description: Model classes for training
+:Description: Model classes
 """
 
 from tensorflow import keras
@@ -75,9 +75,9 @@ class LSTM:
             keras.layers.LSTM(256, return_sequences=True),
             keras.layers.LSTM(128),
             keras.layers.Dropout(0.4),
+            keras.layers.Dense(512, activation=activation_function),
             keras.layers.Dense(256, activation=activation_function),
             keras.layers.Dense(128, activation=activation_function),
-            keras.layers.Dense(64, activation=activation_function),
             keras.layers.Dense(output_size, activation='softmax'),
         ])
 
