@@ -112,12 +112,12 @@ class InceptionExtractor(ExtractorAbstract):
         """
         :param frames: Array of video frames
         :param batch_size: Number of samples to work on in current iteration
-        :return: Preprocessed frames using InceptionV3.preprocess_input (scale values between -1, 1)
+        :return: Preprocessed frames using InceptionV3.preprocess_input
         """
         batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
         out = None
         for batch in batches:
-            pre = tf.keras.applications.InceptionV3.preprocess_input(tf.cast(batch, dtype='float32'))
+            pre = tf.keras.applications.inception_v3.preprocess_input(tf.cast(batch, dtype='float32'))
             res = self.feature_extractor(pre)
             if out is not None:
                 out = tf.concat([res, out], axis=0)
@@ -131,7 +131,7 @@ class InceptionExtractor(ExtractorAbstract):
         :return: Extracted features
         """
         t1 = tf.expand_dims(frame, axis=0)
-        t2 = tf.keras.applications.InceptionV3.preprocess_input(tf.cast(t1, dtype='float32'))
+        t2 = tf.keras.applications.inception_v3.preprocess_input(tf.cast(t1, dtype='float32'))
         out = self.feature_extractor(t2)
         return out
 
@@ -155,8 +155,9 @@ class MobileNetV2Extractor(ExtractorAbstract):
         """
         :param frames: Array of video frames
         :param batch_size: Number of samples to work on in current iteration
-        :return: Preprocessed frames using mobilenet.preprocess_input (scale values between -1, 1)
+        :return: Preprocessed frames using mobilenet.preprocess_input
         """
+        frames = tf.image.resize(frames, (512, 512), preserve_aspect_ratio=True, antialias=True)
         batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
         out = None
         for batch in batches:
