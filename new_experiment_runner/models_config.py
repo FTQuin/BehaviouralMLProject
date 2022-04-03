@@ -33,12 +33,12 @@ class GRU:
     def gru2(output_size, activation_function='relu',
              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential([
-            keras.layers.GRU(160, return_sequences=True),
-            keras.layers.GRU(80),
+            keras.layers.GRU(256, return_sequences=True),
+            keras.layers.GRU(128),
             keras.layers.Dropout(0.4),
-            keras.layers.Dense(160, activation=activation_function),
-            keras.layers.Dense(80, activation=activation_function),
-            keras.layers.Dense(16, activation=activation_function),
+            keras.layers.Dense(512, activation=activation_function),
+            keras.layers.Dense(256, activation=activation_function),
+            keras.layers.Dense(128, activation=activation_function),
             keras.layers.Dense(output_size, activation='softmax'),
         ])
 
