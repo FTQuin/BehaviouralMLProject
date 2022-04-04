@@ -7,21 +7,22 @@
 import os
 import pandas as pd
 import tensorflow as tf
-import feature_extractors_config as fec
-import datasets_config
+import experiment_runner.feature_extractors_config as fec
+import experiment_runner.datasets_config as dc
 
 # ==== MODIFIABLE PARAMS ====
 FEATURE_EXTRACTOR = fec.MobileNetV2Extractor()
 DATASET_PATH = '../datasets/UCF-101'
 
-# init dataset
-dataset = datasets_config.Dataset.Preprocessing(DATASET_PATH, FEATURE_EXTRACTOR)
 
 # extract features from videos
-def prepare_all_videos():
+def prepare_all_videos(path, extractor):
     """
     Take in all videos and extract their features, save extracted features under "features" directory
     """
+
+    # init dataset
+    dataset = dc.Dataset.Preprocessing(path, extractor)
 
     # For each video, get features
     for idx, video_info in enumerate(dataset.data_iterator):
@@ -70,8 +71,9 @@ def prepare_one_video(video_info):
 
 if __name__ == '__main__':
     print('Preparing Data')
+
     # prepare datav
-    features = prepare_all_videos()
+    prepare_all_videos(DATASET_PATH, FEATURE_EXTRACTOR)
 
     # TODO: make more verbose
     print('DONE')

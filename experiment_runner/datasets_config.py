@@ -9,7 +9,7 @@ import tensorflow as tf
 import cv2
 import numpy as np
 import pandas as pd
-from feature_extractors_config import ExtractorAbstract
+from experiment_runner.feature_extractors_config import ExtractorAbstract
 
 
 class Dataset:
