@@ -97,10 +97,10 @@ under the **features** directory
        - `../datasets/UCF-101`
        - `../datasets/NTU`
  
-![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
+Inside of your features folder you will have the folder name for the extractor that was used, the folders
+for each action label and zip files containing the extracted features in a csv
 
-** If you do not wish to change model architecture or feature extractors, head to quickstart and follow
-instructions ** 
+![Extracted Features Image Example](docs/readme_images/features_example.png "Dataset Example" )
 
 ![-](docs/readme_images/line-break.png)
 
@@ -125,16 +125,12 @@ def gru1(output_size, activation_function='relu',
     return model
 ```
 
-
- - Inside of your features folder you will have the folder name for the extractor that was used, the folders
-for each action label and zip files containing the extracted features in a csv
-
 ![-](docs/readme_images/line-break.png)
 
 ## Adding new Feature Extractor
 1. Create a new class in feature\_extractors\_config.py which implements the **ExtractorAbstract** class
-   - pre\_process\_extract\_video()
+   - `pre_process_extract_video(frames)`
      - any processing done to the raw data before extraction + extraction
-   - live\_extract()
+   - `live_extract(frame)`
      - extraction method used for live inference
 
