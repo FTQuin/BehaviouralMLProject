@@ -12,11 +12,10 @@ import datasets_config
 
 # ==== MODIFIABLE PARAMS ====
 FEATURE_EXTRACTOR = fec.MobileNetV2Extractor()
-DATASET_PATH = '../datasets/UCF-3'
+DATASET_PATH = '../datasets/UCF-101'
 
 # init dataset
 dataset = datasets_config.Dataset.Preprocessing(DATASET_PATH, FEATURE_EXTRACTOR)
-
 
 # extract features from videos
 def prepare_all_videos():
@@ -71,7 +70,7 @@ def prepare_one_video(video_info):
 
 if __name__ == '__main__':
     print('Preparing Data')
-    # prepare data
+    # prepare datav
     features = prepare_all_videos()
 
     # TODO: make more verbose
