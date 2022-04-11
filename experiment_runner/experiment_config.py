@@ -28,7 +28,7 @@ class Experiment:
         self.dataset = datasets.Dataset.Training(self.dataset_path, **self.dataset_params, extractor=self.extractor)  # get dataset
         self.model = self.model(output_size=len(self.dataset.labels), **self.model_params)  # get model
 
-    def __str__(self):
+    def gen_name(self):
         s = f'{os.path.split(self.dataset_path)[-1]}_{self.extractor.name}_{self.model_params}_{self.dataset_params}_{self.model.__name__}'
         return s.translate({ord(i): '' for i in '\':{}[],.'}).translate({ord(i): '_' for i in ' '})
 
@@ -63,7 +63,7 @@ def grid(exp_list, param_list):
         for p in list(param_list.values())[0]:
             d = {list(param_list.keys())[0]: p}
             temp = exp.like(**d)
-            l.append(temp.like(name=str(temp)))
+            l.append(temp.like(name=temp.gen_name()[-20:]))
     return l
 
 EXPERIMENTS = grid(EXPERIMENTS, FEATURE_EXTRACTORS)

@@ -27,13 +27,18 @@ def train_model(exp):
         update_freq='epoch',)
 
     # train
-    out = exp.model.fit(
+    exp.model.fit(
         exp.dataset.train_dataset,
         validation_data=exp.dataset.validation_dataset,
         epochs=exp.epochs,
         batch_size=exp.batch_size,
         callbacks=[tensorboard_callback, save_model_callback],
     )
+
+    out = exp.model.evaluate(
+        exp.dataset.test_dataset
+    )
+
     return out
 
 

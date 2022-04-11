@@ -92,7 +92,7 @@ class Dataset:
             # train test split by file
             split = round(1/(1-self.train_test_split))  # put every nth example in validation split
             train_dataset = dataset.window(split, split + 1).flat_map(lambda ds: tf.data.Dataset.zip((ds)))
-            validation_dataset = dataset.skip(split).window(1, split + 1).flat_map(lambda ds: tf.data.Dataset.zip((ds)))
+            test_dataset = dataset.skip(split).window(1, split + 1).flat_map(lambda ds: tf.data.Dataset.zip((ds)))
 
             def process_path(file_path):
                 def sub(fp):
@@ -121,16 +121,25 @@ class Dataset:
 
             # window datasets
             train_dataset = train_dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
-            validation_dataset = validation_dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+            test_dataset = test_dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
 
             # shuffle
             train_dataset = train_dataset.shuffle(buffer_size=1000, seed=1)
-            validation_dataset = validation_dataset.shuffle(buffer_size=1000, seed=1)
+            test_dataset = test_dataset.shuffle(buffer_size=1000, seed=1)
+
+            # split
+            split = round(1 / (1 - self.train_test_split))  # put every nth example in validation split
+            train_dataset = train_dataset.window(split, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
+            validation_dataset = train_dataset.skip(split).window(1, split + 1).flat_map(
+                lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
+
 
             # batch
             self.train_dataset = train_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
             self.validation_dataset = validation_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
+                .prefetch(tf.data.AUTOTUNE)
+            self.test_dataset = test_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
 
             if enable_caching:
@@ -140,3 +149,4 @@ class Dataset:
 
                 self.train_dataset = self.train_dataset.cache(cache_path)
                 self.validation_dataset = self.validation_dataset.cache(cache_path)
+                self.test_dataset = self.test_dataset.cache(cache_path)
