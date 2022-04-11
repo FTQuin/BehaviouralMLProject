@@ -9,7 +9,6 @@ import tensorflow as tf
 import cv2
 import numpy as np
 import pandas as pd
-from experiment_runner.feature_extractors_config import ExtractorAbstract
 
 
 class Dataset:
@@ -73,6 +72,7 @@ class Dataset:
 
     class Training:
         def __init__(self, dataset_path, extractor, seq_len, train_test_split=.75, enable_caching=False):
+            tf.random.set_seed(1)
             self.extractor = extractor
             self.seq_len = seq_len
             self.train_test_split = train_test_split
@@ -82,16 +82,17 @@ class Dataset:
                                                                     os.path.split(dataset_path)[-1],
                                                                     extractor.name))
             self.labels = list(os.walk(self._features_save_path))[0][1]
+            if '.cache' in self.labels:
+                self.labels.remove('.cache')
 
             # ==== CREATE DATASET ====
-            # make dir to save caches
-            if enable_caching:
-                cache_path = os.path.join(self._features_save_path, '.cache')
-                try: os.mkdir(cache_path)
-                except FileExistsError: pass
-
             dataset = tf.data.Dataset.list_files(os.path.join(self._features_save_path, '*/*.zip'))
             dataset = dataset.shuffle(10000000, seed=1)
+
+            # train test split by file
+            split = round(1/(1-self.train_test_split))  # put every nth example in validation split
+            train_dataset = dataset.window(split, split + 1).flat_map(lambda ds: tf.data.Dataset.zip((ds)))
+            validation_dataset = dataset.skip(split).window(1, split + 1).flat_map(lambda ds: tf.data.Dataset.zip((ds)))
 
             def process_path(file_path):
                 def sub(fp):
@@ -118,19 +119,24 @@ class Dataset:
 
                 return ds
 
-            dataset = dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+            # window datasets
+            train_dataset = train_dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+            validation_dataset = validation_dataset.interleave(process_path, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
 
-            dataset = dataset.shuffle(buffer_size=1000, seed=1)
+            # shuffle
+            train_dataset = train_dataset.shuffle(buffer_size=1000, seed=1)
+            validation_dataset = validation_dataset.shuffle(buffer_size=1000, seed=1)
 
-            split = round(1/(1-self.train_test_split))  # put every nth example in validation split
-            train_dataset = dataset.window(split, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
-            validation_dataset = dataset.skip(split).window(1, split + 1).flat_map(lambda ds, lbl: tf.data.Dataset.zip((ds, lbl)))
-
+            # batch
             self.train_dataset = train_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
             self.validation_dataset = validation_dataset.batch(64, num_parallel_calls=tf.data.AUTOTUNE)\
                 .prefetch(tf.data.AUTOTUNE)
 
             if enable_caching:
+                cache_path = os.path.join(self._features_save_path, '.cache/')
+                try: os.mkdir(cache_path)
+                except FileExistsError: pass
+
                 self.train_dataset = self.train_dataset.cache(cache_path)
                 self.validation_dataset = self.validation_dataset.cache(cache_path)
