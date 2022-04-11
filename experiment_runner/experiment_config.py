@@ -1,3 +1,4 @@
+import os.path
 from dataclasses import dataclass
 from typing import Callable
 
@@ -27,18 +28,49 @@ class Experiment:
         self.dataset = datasets.Dataset.Training(self.dataset_path, **self.dataset_params, extractor=self.extractor)  # get dataset
         self.model = self.model(output_size=len(self.dataset.labels), **self.model_params)  # get model
 
+    def __str__(self):
+        s = f'{os.path.split(self.dataset_path)[-1]}_{self.extractor.name}_{self.model_params}_{self.dataset_params}_{self.model.__name__}'
+        return s.translate({ord(i): '' for i in '\':{}[],.'}).translate({ord(i): '_' for i in ' '})
 
-EXPERIMENT_NAME = 'TEST'
-e = Experiment(name='test', batch_size=16, epochs=5,
-               dataset_path='../datasets/NTU-3', dataset_params={'seq_len': 20,
-                                                                 'train_test_split': .8},
-               extractor=feature_extractors.MovenetExtractor,
-               model=models.GRU.gru1, model_params={'activation_function': 'relu',
-                                                    'loss_function': 'sparse_categorical_crossentropy',
-                                                    'optimizer': 'adam'}
-               )
 
-EXPERIMENTS = [
-    e,
-    e.like(name='not rest')
-]
+FEATURE_EXTRACTORS = {'extractor': [feature_extractors.MovenetExtractor, feature_extractors.InceptionExtractor, feature_extractors.MobileNetV2Extractor]}
+ACTIVATION_FUNCTIONS = {'model_params': [{'activation_function': 'relu', 'optimizer': 'adam'},
+                                         {'activation_function': 'tanh', 'optimizer': 'adam'},
+                                         {'activation_function': 'relu', 'optimizer': 'adagrad'},
+                                         {'activation_function': 'tanh', 'optimizer': 'adagrad'}
+                                         ]}
+DATASET_PARAMS = {'dataset_params': [{'seq_len': 10, 'train_test_split': .80},
+                                     {'seq_len': 20, 'train_test_split': .80},
+                                     {'seq_len': 50, 'train_test_split': .80}
+                                     ]}
+
+MODELS = {'model': [models.GRU.gru2, models.GRU.gru1, models.LSTM.lstm2, models.LSTM.lstm3]}
+
+e = Experiment(
+    name='test', batch_size=32, epochs=10,
+    dataset_path='../datasets/NTU-3', dataset_params={'seq_len': 20,
+                                                      'train_test_split': .8},
+    extractor=feature_extractors.MovenetExtractor,
+    model=models.GRU.gru1, model_params={'activation_function': 'relu',
+                                         'optimizer': 'adam'}
+)
+
+EXPERIMENTS = [e]
+
+def grid(exp_list, param_list):
+    l = []
+    for exp in exp_list:
+        for p in list(param_list.values())[0]:
+            d = {list(param_list.keys())[0]: p}
+            temp = exp.like(**d)
+            l.append(temp.like(name=str(temp)))
+    return l
+
+EXPERIMENTS = grid(EXPERIMENTS, FEATURE_EXTRACTORS)
+EXPERIMENTS = grid(EXPERIMENTS, ACTIVATION_FUNCTIONS)
+EXPERIMENTS = grid(EXPERIMENTS, DATASET_PARAMS)
+EXPERIMENTS = grid(EXPERIMENTS, MODELS)
+
+
+EXPERIMENT_NAME = 'GRID'
+
