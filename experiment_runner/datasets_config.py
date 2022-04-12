@@ -147,6 +147,6 @@ class Dataset:
                 try: os.mkdir(cache_path)
                 except FileExistsError: pass
 
-                self.train_dataset = self.train_dataset.cache(cache_path)
-                self.validation_dataset = self.validation_dataset.cache(cache_path)
-                self.test_dataset = self.test_dataset.cache(cache_path)
+                self.train_dataset = self.train_dataset.cache(cache_path+'/train')
+                self.validation_dataset = self.validation_dataset.cache(cache_path+'/validation')
+                self.test_dataset = self.test_dataset.cache(cache_path+'/test')
