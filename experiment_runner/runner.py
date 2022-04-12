@@ -58,7 +58,7 @@ if __name__ == '__main__':
     for idx, exp in enumerate(config.EXPERIMENTS):
         # check if experiment already exists
         if list(os.walk(EXPERIMENT_DIR))[0][1].__contains__(exp.name):
-            print('==== Experiment already happened, SKIPPING ====')
+            print(f'==== Experiment {exp.name} already happened, SKIPPING ====')
             continue
 
         # logging
