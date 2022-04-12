@@ -1,3 +1,4 @@
+import gc
 import os
 import time
 from datetime import datetime
@@ -10,14 +11,14 @@ logging.set_verbosity(logging.ERROR)
 
 def train_model(exp):
     # dirs
-    experiment_dir = os.path.join(f'../saved_experiments/{config.EXPERIMENT_NAME}')
+    experiment_dir = f'../saved_experiments/{config.EXPERIMENT_NAME}'
 
     log_dir = os.path.join(experiment_dir, 'logs/',
                            exp.name + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     # callbacks
     save_model_callback = tf.keras.callbacks.ModelCheckpoint(
-        os.path.join(f'{experiment_dir}/{exp.name}'),
+        f'{experiment_dir}/{exp.name}',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -38,11 +39,17 @@ def train_model(exp):
 
     # evaluate
     print('==== EVAL ===')
-    out = exp.model.evaluate(
+    res = exp.model.evaluate(
         exp.dataset.test_dataset
     )
 
-    return out
+    # write eval results to tensorboard
+    test_summary_writer = tf.summary.create_file_writer(os.path.join(log_dir, 'eval'))
+    with test_summary_writer.as_default():
+        tf.summary.scalar('test_loss', res[0], step=0)
+        tf.summary.scalar('test_accuracy', res[1], step=0)
+
+    return res
 
 
 if __name__ == '__main__':
@@ -50,29 +57,37 @@ if __name__ == '__main__':
 
     # train test loop
     for idx, exp in enumerate(config.EXPERIMENTS):
+        # logging
         now = time.time()
-        try:
-            os.makedirs(f'../saved_experiments/{exp.extractor.name}TxtFiles')
-        except:
-            pass
-        path_to_write = os.path.join(f'../saved_experiments/{exp.extractor.name}TxtFiles')
         print(f'\n\n\n==== Starting experiment {idx + 1} of {len(config.EXPERIMENTS)} ====\n')
         print('Parameters:')
         for k, v in exp.__dict__.items():
-            with open(f'{path_to_write}/{exp.name}.txt', 'a') as out:
-                print(f'{k}: {v}')
-                out.write(f'{k}: {v}\n')
-
-
+            print(f'{k}: {v}')
 
         # init based on hyper parameters
         exp.initialize_experiment()
 
         # train model
         eval_loss_acc = train_model(exp)
+
+        # logging
+        train_time = time.time() - now
+        path_to_write = os.path.join(f'../saved_experiments/{config.EXPERIMENT_NAME}/TxtFiles')
+        try:
+            os.makedirs(path_to_write)
+        except FileExistsError:
+            pass
         with open(f'{path_to_write}/{exp.name}.txt', 'a') as out:
+            for k, v in exp.__dict__.items():
+                out.write(f'{k}: {v}\n')
             out.write(f'\n{eval_loss_acc=}\n')
+            out.write(f'{train_time=}\n')
+            out.write(f'\n===================\n\n')
 
         print(f'\n{eval_loss_acc=}')
-        print(f'Training took {time.time() - now} seconds')
+        print(f'Training took {train_time} seconds')
+
+        # memory salvage
         tf.keras.backend.clear_session()
+        del exp.model
+        gc.collect()
