@@ -13,24 +13,8 @@ class GRU:
 
     All methods return sequential GRU models
     """
-
     @staticmethod
     def gru1(output_size, activation_function='relu',
-             loss_function="sparse_categorical_crossentropy", optimizer="adam"):
-        model = keras.Sequential([
-            keras.layers.GRU(16, return_sequences=True),
-            keras.layers.GRU(8),
-            keras.layers.Dropout(0.4),
-            keras.layers.Dense(16, activation=activation_function),
-            keras.layers.Dense(8, activation=activation_function),
-            keras.layers.Dense(output_size, activation='softmax')
-        ])
-
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
-        return model
-
-    @staticmethod
-    def gru2(output_size, activation_function='relu',
              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential([
             keras.layers.GRU(256, return_sequences=True),
@@ -45,6 +29,23 @@ class GRU:
         model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
         return model
 
+    @staticmethod
+    def gru2(output_size, activation_function='relu',
+              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
+        model = keras.Sequential([
+            keras.layers.GRU(1024, return_sequences=True),
+            keras.layers.Dropout(0.4),
+            keras.layers.GRU(512),
+            keras.layers.Dropout(0.4),
+            keras.layers.Dense(1024, activation=activation_function),
+            keras.layers.Dense(512, activation=activation_function),
+            keras.layers.Dense(128, activation=activation_function),
+            keras.layers.Dense(output_size, activation='softmax'),
+        ])
+
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
+        return model
+
 
 class LSTM:
     """
@@ -52,24 +53,8 @@ class LSTM:
 
     All methods return sequential LSTM models
     """
-
     @staticmethod
     def lstm1(output_size, activation_function='relu',
-              loss_function="sparse_categorical_crossentropy", optimizer="adam"):
-        model = keras.Sequential([
-            keras.layers.LSTM(16, return_sequences=True),
-            keras.layers.LSTM(8),
-            keras.layers.Dropout(0.4),
-            keras.layers.Dense(16, activation=activation_function),
-            keras.layers.Dense(8, activation=activation_function),
-            keras.layers.Dense(output_size, activation='softmax')
-        ])
-
-        model.compile(loss=loss_function, optimizer=optimizer, metrics=["sparse_categorical_accuracy"])
-        return model
-
-    @staticmethod
-    def lstm2(output_size, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential([
             keras.layers.LSTM(256, return_sequences=True),
@@ -85,16 +70,16 @@ class LSTM:
         return model
 
     @staticmethod
-    def lstm3(output_size, activation_function='relu',
+    def lstm2(output_size, activation_function='relu',
               loss_function="sparse_categorical_crossentropy", optimizer="adam"):
         model = keras.Sequential([
-            keras.layers.LSTM(3000, return_sequences=True),
+            keras.layers.LSTM(1024, return_sequences=True),
             keras.layers.Dropout(0.4),
-            keras.layers.LSTM(1280),
+            keras.layers.LSTM(512),
             keras.layers.Dropout(0.4),
-            keras.layers.Dense(1280, activation=activation_function),
-            keras.layers.Dense(500, activation=activation_function),
-            keras.layers.Dense(64, activation=activation_function),
+            keras.layers.Dense(1024, activation=activation_function),
+            keras.layers.Dense(512, activation=activation_function),
+            keras.layers.Dense(128, activation=activation_function),
             keras.layers.Dense(output_size, activation='softmax'),
         ])
 
