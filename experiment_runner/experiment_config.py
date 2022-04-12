@@ -39,16 +39,16 @@ ACTIVATION_FUNCTIONS = {'model_params': [{'activation_function': 'relu', 'optimi
                                          {'activation_function': 'relu', 'optimizer': 'adagrad'},
                                          {'activation_function': 'tanh', 'optimizer': 'adagrad'}
                                          ]}
-DATASET_PARAMS = {'dataset_params': [{'seq_len': 10, 'train_test_split': .80},
-                                     {'seq_len': 20, 'train_test_split': .80},
-                                     {'seq_len': 50, 'train_test_split': .80}
+DATASET_PARAMS = {'dataset_params': [{'seq_len': 10, 'train_test_split': .80, 'enable_caching': True},
+                                     {'seq_len': 20, 'train_test_split': .80, 'enable_caching': True},
+                                     {'seq_len': 50, 'train_test_split': .80, 'enable_caching': True}
                                      ]}
 
-MODELS = {'model': [models.GRU.gru2, models.GRU.gru1, models.LSTM.lstm2, models.LSTM.lstm3]}
+MODELS = {'model': [models.GRU.gru2, models.GRU.gru1, models.LSTM.lstm1, models.LSTM.lstm2]}
 
 e = Experiment(
     name='test', batch_size=32, epochs=10,
-    dataset_path='../datasets/NTU-3', dataset_params={'seq_len': 20,
+    dataset_path='../datasets/UCF-3', dataset_params={'seq_len': 20,
                                                       'train_test_split': .8},
     extractor=feature_extractors.MovenetExtractor,
     model=models.GRU.gru1, model_params={'activation_function': 'relu',
@@ -63,7 +63,7 @@ def grid(exp_list, param_list):
         for p in list(param_list.values())[0]:
             d = {list(param_list.keys())[0]: p}
             temp = exp.like(**d)
-            l.append(temp.like(name=temp.gen_name()[-20:]))
+            l.append(temp.like(name=str(temp.gen_name())))
     return l
 
 EXPERIMENTS = grid(EXPERIMENTS, FEATURE_EXTRACTORS)
