@@ -8,17 +8,16 @@ from absl import logging
 
 logging.set_verbosity(logging.ERROR)
 
+# dirs
+EXPERIMENT_DIR = f'../saved_experiments/{config.EXPERIMENT_NAME}'
 
 def train_model(exp):
-    # dirs
-    experiment_dir = f'../saved_experiments/{config.EXPERIMENT_NAME}'
-
-    log_dir = os.path.join(experiment_dir, 'logs/',
+    log_dir = os.path.join(EXPERIMENT_DIR, 'logs/',
                            exp.name + '_' + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     # callbacks
     save_model_callback = tf.keras.callbacks.ModelCheckpoint(
-        f'{experiment_dir}/{exp.name}',
+        f'{EXPERIMENT_DIR}/{exp.name}',
         monitor='val_loss',
         verbose=1,
         save_best_only=True,
@@ -38,7 +37,7 @@ def train_model(exp):
     )
 
     # evaluate
-    print('==== EVAL ===')
+    print('==== EVAL ====')
     res = exp.model.evaluate(
         exp.dataset.test_dataset
     )
@@ -57,6 +56,11 @@ if __name__ == '__main__':
 
     # train test loop
     for idx, exp in enumerate(config.EXPERIMENTS):
+        # check if experiment already exists
+        if list(os.walk(EXPERIMENT_DIR))[0][1].__contains__(exp.name):
+            print('==== Experiment already happened, SKIPPING ====')
+            continue
+
         # logging
         now = time.time()
         print(f'\n\n\n==== Starting experiment {idx + 1} of {len(config.EXPERIMENTS)} ====\n')
@@ -89,5 +93,5 @@ if __name__ == '__main__':
 
         # memory salvage
         tf.keras.backend.clear_session()
-        del exp.model
+        del exp
         gc.collect()
