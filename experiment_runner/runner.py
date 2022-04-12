@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import experiment_config as config
 
@@ -35,6 +36,8 @@ def train_model(exp):
         callbacks=[tensorboard_callback, save_model_callback],
     )
 
+    # evaluate
+    print('==== EVAL ===')
     out = exp.model.evaluate(
         exp.dataset.test_dataset
     )
@@ -45,9 +48,19 @@ def train_model(exp):
 if __name__ == '__main__':
     models = []
     # train test loop
-    for exp in config.EXPERIMENTS:
+    for idx, exp in enumerate(config.EXPERIMENTS):
+        now = time.time()
+        print(f'\n\n\n==== Starting experiment {idx+1} of {len(config.EXPERIMENTS)} ====\n')
+        print('Parameters:')
+        for k, v in exp.__dict__.items():
+            print(f'{k}: {v}')
+
         # init based on hyper parameters
         exp.initialize_experiment()
 
         # train model
-        train_model(exp)
+        eval_loss_acc = train_model(exp)
+
+        print(f'\n{eval_loss_acc=}')
+        print(f'Training took {time.time() - now} seconds')
+        tf.keras.backend.clear_session()
