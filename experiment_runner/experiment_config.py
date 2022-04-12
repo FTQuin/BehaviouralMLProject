@@ -36,15 +36,17 @@ class Experiment:
 FEATURE_EXTRACTORS = {'extractor': [feature_extractors.MovenetExtractor, feature_extractors.InceptionExtractor, feature_extractors.MobileNetV2Extractor]}
 ACTIVATION_FUNCTIONS = {'model_params': [{'activation_function': 'relu', 'optimizer': 'adam'},
                                          {'activation_function': 'tanh', 'optimizer': 'adam'},
+                                         {'activation_function': 'sigmoid', 'optimizer': 'adam'},
                                          {'activation_function': 'relu', 'optimizer': 'adagrad'},
-                                         {'activation_function': 'tanh', 'optimizer': 'adagrad'}
+                                         {'activation_function': 'tanh', 'optimizer': 'adagrad'},
+                                         {'activation_function': 'sigmoid', 'optimizer': 'adagrad'}
                                          ]}
 DATASET_PARAMS = {'dataset_params': [{'seq_len': 10, 'train_test_split': .80, 'enable_caching': True},
                                      {'seq_len': 20, 'train_test_split': .80, 'enable_caching': True},
                                      {'seq_len': 50, 'train_test_split': .80, 'enable_caching': True}
                                      ]}
 
-MODELS = {'model': [models.GRU.gru2, models.GRU.gru1, models.LSTM.lstm1, models.LSTM.lstm2]}
+MODELS = {'model': [models.GRU.gru1, models.GRU.gru2, models.LSTM.lstm1, models.LSTM.lstm2]}
 
 e = Experiment(
     name='test', batch_size=32, epochs=10,
