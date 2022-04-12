@@ -34,13 +34,13 @@ class Experiment:
 
 
 FEATURE_EXTRACTORS = {'extractor': [feature_extractors.MovenetExtractor, feature_extractors.InceptionExtractor, feature_extractors.MobileNetV2Extractor]}
-ACTIVATION_FUNCTIONS = {'model_params': [{'activation_function': 'relu', 'optimizer': 'adam'},
-                                         {'activation_function': 'tanh', 'optimizer': 'adam'},
-                                         {'activation_function': 'sigmoid', 'optimizer': 'adam'},
-                                         {'activation_function': 'relu', 'optimizer': 'adagrad'},
-                                         {'activation_function': 'tanh', 'optimizer': 'adagrad'},
-                                         {'activation_function': 'sigmoid', 'optimizer': 'adagrad'}
-                                         ]}
+MODEL_PARAMS = {'model_params': [{'activation_function': 'relu', 'optimizer': 'adam'},
+                                 {'activation_function': 'tanh', 'optimizer': 'adam'},
+                                 {'activation_function': 'sigmoid', 'optimizer': 'adam'},
+                                 {'activation_function': 'relu', 'optimizer': 'adagrad'},
+                                 {'activation_function': 'tanh', 'optimizer': 'adagrad'},
+                                 {'activation_function': 'sigmoid', 'optimizer': 'adagrad'}
+                                 ]}
 DATASET_PARAMS = {'dataset_params': [{'seq_len': 10, 'train_test_split': .80, 'enable_caching': True},
                                      {'seq_len': 20, 'train_test_split': .80, 'enable_caching': True},
                                      {'seq_len': 50, 'train_test_split': .80, 'enable_caching': True}
@@ -69,7 +69,7 @@ def grid(exp_list, param_list):
     return l
 
 EXPERIMENTS = grid(EXPERIMENTS, FEATURE_EXTRACTORS)
-EXPERIMENTS = grid(EXPERIMENTS, ACTIVATION_FUNCTIONS)
+EXPERIMENTS = grid(EXPERIMENTS, MODEL_PARAMS)
 EXPERIMENTS = grid(EXPERIMENTS, DATASET_PARAMS)
 EXPERIMENTS = grid(EXPERIMENTS, MODELS)
 
