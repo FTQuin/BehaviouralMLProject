@@ -2,3 +2,4 @@ numpy==1.22.3
 opencv_python==4.5.5.64
 pandas==1.4.2
 tensorflow==2.8.0
+ipykernel==6.13.0
