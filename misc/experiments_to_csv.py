@@ -7,7 +7,7 @@ os.chdir(os.path.join('../saved_experiments'))
 extractors = ["MobileNetV2Extractor"]
 activation_function = ['relu', 'tanh', 'sigmoid']
 optimizers = ['adam', 'sgd', 'adagrad']
-seq_len = ['10', '20', '50']
+seq_len = [10, 20, 50]
 models = ['gru1', 'gru2', 'lstm1', 'lstm2']
 
 hyper_params = [extractors, activation_function, optimizers, seq_len, models]
@@ -53,3 +53,35 @@ print(s['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'gru2'].mean())
 print(s['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'lstm1'].mean())
 print(s['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'lstm2'].mean())
 s.to_csv(f'../../mobilenet_output_ntu-6.csv', index=True)
+
+# datasets = ["NTU-6", "UCF-3"]
+# extractors = ["MovenetExtractor", "InceptionExtractor", "MobileNetV2Extractor"]
+# activation_function = ['relu', 'tanh', 'sigmoid']
+# optimizers = ['adam', 'sgd', 'adagrad']
+# seq_len = [10, 20, 50]
+# models = ['gru1', 'gru2', 'lstm1', 'lstm2']
+# hyper_params = [datasets, extractors, activation_function, optimizers, seq_len, models]
+# indexes = pd.MultiIndex.from_product(hyper_params,
+#                                      names=['dataset', 'extractor', 'activation_function', 'optimizer',
+#                                             'seq_len', 'model'])
+# s_main = pd.Series(index=indexes, dtype='float64')
+# s = pd.read_csv('./saved_experiments/movenet_output_ntu-6.csv', index_col=list(range(5))).squeeze()
+# s_main["NTU-6"].update(s)
+# s = pd.read_csv('./saved_experiments/mobilenet_output_ntu-6.csv', index_col=list(range(5))).squeeze()
+# s_main["NTU-6"].update(s)
+# s = pd.read_csv('./saved_experiments/inception_output_ntu-6.csv', index_col=list(range(5))).squeeze()
+# s_main["NTU-6"].update(s)
+# s = pd.read_csv('./saved_experiments/inception_output.csv', index_col=list(range(5))).squeeze()
+# s_main["UCF-3"].update(s)
+# s = pd.read_csv('./saved_experiments/movenet_output.csv', index_col=list(range(5))).squeeze()
+# s_main["UCF-3"].update(s)
+# s = pd.read_csv('./saved_experiments/mobilenet_output.csv', index_col=list(range(5))).squeeze()
+# s_main["UCF-3"].update(s)
+#
+# for n in s_main.index.names[1:]:
+#     print(f'\n=={n}==')
+#     for i in s_main.index.get_level_values(n).unique():
+#         print(i)
+#         print(s_main['NTU-6'].xs(i, level=n).mean())
+#         print(s_main['UCF-3'].xs(i, level=n).mean())
+#         print(s_main.xs(i, level=n).mean())
