@@ -87,7 +87,7 @@ class Dataset:
 
             # ==== CREATE DATASET ====
             dataset = tf.data.Dataset.list_files(os.path.join(self._features_save_path, '*/*.zip'))
-            dataset = dataset.shuffle(10000000, seed=1)
+            dataset = dataset.shuffle(1000000, seed=1)
 
             # train test split by file
             split = round(1/(1-self.train_test_split))  # put every nth example in validation split
@@ -114,7 +114,7 @@ class Dataset:
                 ds = tf.data.Dataset.zip((ds, tf.data.Dataset.from_tensor_slices(labels)))
 
                 ds = ds.window(self.seq_len, shift=1, drop_remainder=True)
-                ds = ds.shuffle(buffer_size=1000000, seed=1)
+                ds = ds.shuffle(buffer_size=5000, seed=1)
                 ds = ds.flat_map(lambda x, y: tf.data.Dataset.zip((x.batch(self.seq_len), y.batch(1))))
 
                 return ds

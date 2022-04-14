@@ -72,7 +72,7 @@ if __name__ == '__main__':
         exp.initialize_experiment()
 
         # train model
-        eval_loss_acc = train_model(exp)
+        eval_metrics = train_model(exp)
 
         # logging
         train_time = time.time() - now
@@ -84,14 +84,20 @@ if __name__ == '__main__':
         with open(f'{path_to_write}/{exp.name}.txt', 'a') as out:
             for k, v in exp.__dict__.items():
                 out.write(f'{k}: {v}\n')
-            out.write(f'\n{eval_loss_acc=}\n')
+            out.write(f'\n{eval_metrics=}\n')
             out.write(f'{train_time=}\n')
             out.write(f'\n===================\n\n')
 
-        print(f'\n{eval_loss_acc=}')
+        print(f'\n{eval_metrics=}')
         print(f'Training took {train_time} seconds')
 
         # memory salvage
         tf.keras.backend.clear_session()
+        del exp.model
+        del exp.dataset
+        del exp.extractor
         del exp
-        gc.collect()
+        tf.keras.backend.clear_session()
+        gc.collect(generation=0)
+        gc.collect(generation=1)
+        gc.collect(generation=2)
