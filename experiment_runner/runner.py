@@ -7,7 +7,6 @@ import tensorflow as tf
 from absl import logging
 
 logging.set_verbosity(logging.ERROR)
-
 # dirs
 EXPERIMENT_DIR = f'../saved_experiments/{config.EXPERIMENT_NAME}'
 
@@ -57,9 +56,12 @@ if __name__ == '__main__':
     # train test loop
     for idx, exp in enumerate(config.EXPERIMENTS):
         # check if experiment already exists
-        if list(os.walk(EXPERIMENT_DIR))[0][1].__contains__(exp.name):
-            print(f'==== Experiment {exp.name} already happened, SKIPPING ====')
-            continue
+        try:
+            if exp.name in os.listdir(EXPERIMENT_DIR):
+                print(f'==== Experiment {exp.name} already happened, SKIPPING ====')
+                continue
+        except:
+            pass
 
         # logging
         now = time.time()

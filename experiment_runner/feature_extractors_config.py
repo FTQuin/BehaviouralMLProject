@@ -114,6 +114,7 @@ class InceptionExtractor(ExtractorAbstract):
         :param batch_size: Number of samples to work on in current iteration
         :return: Preprocessed frames using InceptionV3.preprocess_input
         """
+        frames = tf.image.resize(frames, (512, 512), preserve_aspect_ratio=True, antialias=True)
         batches = np.split(frames, [i for i in range(batch_size, len(frames), batch_size)])
         out = None
         for batch in batches:

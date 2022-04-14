@@ -12,7 +12,7 @@ import experiment_runner.datasets_config as dc
 
 # ==== MODIFIABLE PARAMS ====
 FEATURE_EXTRACTOR = fec.MobileNetV2Extractor()
-DATASET_PATH = '../datasets/UCF-101'
+DATASET_PATH = '../datasets/NTU-6'
 
 
 # extract features from videos
@@ -23,7 +23,6 @@ def prepare_all_videos(path, extractor):
 
     # init dataset
     dataset = dc.Dataset.Preprocessing(path, extractor)
-
     # For each video, get features
     for idx, video_info in enumerate(dataset.data_iterator):
         video_frame_features = prepare_one_video(video_info)
@@ -42,7 +41,6 @@ def prepare_all_videos(path, extractor):
                                     compression=dict(method='zip',
                                                      archive_name=video_frame_features['video'][0].replace('.avi',
                                                                                                            '.csv')))
-
         print(
             f'Saved to  {os.path.join(dataset.features_save_path, video_frame_features["label"][0], video_frame_features["video"][0].replace(".avi", ".csv"))}')
 
