@@ -81,9 +81,12 @@ class Dataset:
             self._features_save_path = os.path.abspath(os.path.join('../features',
                                                                     os.path.split(dataset_path)[-1],
                                                                     extractor.name))
-            self.labels = list(os.walk(self._features_save_path))[0][1]
-            if '.cache' in self.labels:
-                self.labels.remove('.cache')
+            try:
+                self.labels = list(os.walk(self._features_save_path))[0][1]
+                if '.cache' in self.labels:
+                    self.labels.remove('.cache')
+            except:
+                pass
 
             # ==== CREATE DATASET ====
             dataset = tf.data.Dataset.list_files(os.path.join(self._features_save_path, '*/*.zip'))
