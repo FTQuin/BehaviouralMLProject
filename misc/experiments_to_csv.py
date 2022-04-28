@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from sklearn.metrics import f1_score, recall_score, precision_score, classification_report
+import sklearn.metrics as mets
 import tensorflow as tf
 import experiment_runner.datasets_config as dc
 import experiment_runner.feature_extractors_config as fe
@@ -18,7 +18,7 @@ hyper_params = [extractors, activation_function, optimizers, seq_len, models]
 indexes = pd.MultiIndex.from_product(hyper_params,
                                      names=['extractor', 'activation_function', 'optimizer', 'seq_len',
                                             'model'])
-df = pd.DataFrame(index=indexes, columns=['accuracy', 'time', 'f1', 'recall', 'precision'], dtype='float64')
+df = pd.DataFrame(index=indexes, columns=['accuracy', 'time', 'f1', 'recall', 'precision', 'recall', 'precision', 'bal_accuracy'], dtype='float64')
 
 # init dataset
 ex = fe.MobileNetV2Extractor()     ## HERE
@@ -70,11 +70,12 @@ for file in os.listdir():
         df.loc[(extractor, act_func, optimizer, window, mdl), 'accuracy'] = acc
         df.loc[(extractor, act_func, optimizer, window, mdl), 'time'] = timeing
         true, pred = get_preds(exp_name, int(window))
-        df.loc[(extractor, act_func, optimizer, window, mdl), 'f1'] = f1_score(true, pred, average='weighted')
-        df.loc[(extractor, act_func, optimizer, window, mdl), 'recall'] = recall_score(true, pred, average='weighted')
-        df.loc[(extractor, act_func, optimizer, window, mdl), 'precision'] = precision_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'f1'] = mets.f1_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'recall'] = mets.recall_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'precision'] = mets.precision_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'bal_accuracy'] = mets.balanced_accuracy_score(true, pred)
         print(exp_name)
-        print(classification_report(true, pred, labels=labels))
+        print(mets.classification_report(true, pred, labels=labels))
 
 
 # print(df['MobileNetV2Extractor', 'relu', 'sgd', :, 'gru1'].mean())
@@ -93,7 +94,7 @@ for file in os.listdir():
 # print(df['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'gru2'].mean())
 # print(df['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'lstm1'].mean())
 # print(df['MobileNetV2Extractor', 'sigmoid', 'sgd', :, 'lstm2'].mean())
-df.to_csv(f'../../mobilenet_output_ntu-6.csv', index=True)
+df.to_csv(f'../../mobilenet_output_ntu-6_test.csv', index=True)
 
 # datasets = ["NTU-6", "UCF-3"]
 # extractors = ["MovenetExtractor", "InceptionExtractor", "MobileNetV2Extractor"]
