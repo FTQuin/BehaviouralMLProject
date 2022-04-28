@@ -18,7 +18,7 @@ hyper_params = [extractors, activation_function, optimizers, seq_len, models]
 indexes = pd.MultiIndex.from_product(hyper_params,
                                      names=['extractor', 'activation_function', 'optimizer', 'seq_len',
                                             'model'])
-df = pd.DataFrame(index=indexes, columns=['accuracy', 'f1', 'recall', 'precision'], dtype='float64')
+df = pd.DataFrame(index=indexes, columns=['accuracy', 'time', 'f1', 'recall', 'precision'], dtype='float64')
 
 # init dataset
 ex = fe.MobileNetV2Extractor()     ## HERE
@@ -56,23 +56,25 @@ os.chdir(os.path.abspath(f'./MobilenetGridSearchEpoch25_NTU-6'))     ## HERE
 os.chdir(os.path.abspath(f'./TxtFiles'))
 
 for file in os.listdir():
-    for opt, param, model in zip(activation_function, optimizers, models):
-        with open(file, 'r') as f:
-            exp_name = f.readline()
-            exp_name_split = exp_name.split(':')[1].strip().split('_')
-            text = f.read()
-            extractor = exp_name_split[1]
-            act_func = exp_name_split[4]
-            optimizer = exp_name_split[6]
-            window = exp_name_split[9]
-            mdl = exp_name_split[-1]
-            acc = float(text.split('=')[1].split('\n')[0].replace('[', '').replace(']', '').split(',')[1])
-            df['accuracy'][extractor, act_func, optimizer, window, mdl] = acc
-            true, pred = get_preds(exp_name, int(window))
-            df['f1'][extractor, act_func, optimizer, window, mdl] = f1_score(true, pred, average='weighted')
-            df['recall'][extractor, act_func, optimizer, window, mdl] = recall_score(true, pred, average='weighted')
-            df['precision'][extractor, act_func, optimizer, window, mdl] = precision_score(true, pred, average='weighted')
-            print(classification_report(true, pred))
+    with open(file, 'r') as f:
+        exp_name = f.readline()
+        exp_name_split = exp_name.split(':')[1].strip().split('_')
+        text = f.read()
+        timeing = text.split('\n')[-5].split('=')[1]
+        extractor = exp_name_split[1]
+        act_func = exp_name_split[4]
+        optimizer = exp_name_split[6]
+        window = exp_name_split[9]
+        mdl = exp_name_split[-1]
+        acc = float(text.split('=')[1].split('\n')[0].replace('[', '').replace(']', '').split(',')[1])
+        df[(extractor, act_func, optimizer, window, mdl), 'accuracy'] = acc
+        df[(extractor, act_func, optimizer, window, mdl), 'time'] = timeing
+        true, pred = get_preds(exp_name, int(window))
+        df[(extractor, act_func, optimizer, window, mdl), 'f1'] = f1_score(true, pred, average='weighted')
+        df[(extractor, act_func, optimizer, window, mdl), 'recall'] = recall_score(true, pred, average='weighted')
+        df[(extractor, act_func, optimizer, window, mdl), 'precision'] = precision_score(true, pred, average='weighted')
+        print(exp_name)
+        print(classification_report(true, pred))
 
 
 # print(df['MobileNetV2Extractor', 'relu', 'sgd', :, 'gru1'].mean())
