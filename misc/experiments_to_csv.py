@@ -67,14 +67,14 @@ for file in os.listdir():
         window = exp_name_split[9]
         mdl = exp_name_split[-1]
         acc = float(text.split('=')[1].split('\n')[0].replace('[', '').replace(']', '').split(',')[1])
-        df[(extractor, act_func, optimizer, window, mdl), 'accuracy'] = acc
-        df[(extractor, act_func, optimizer, window, mdl), 'time'] = timeing
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'accuracy'] = acc
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'time'] = timeing
         true, pred = get_preds(exp_name, int(window))
-        df[(extractor, act_func, optimizer, window, mdl), 'f1'] = f1_score(true, pred, average='weighted')
-        df[(extractor, act_func, optimizer, window, mdl), 'recall'] = recall_score(true, pred, average='weighted')
-        df[(extractor, act_func, optimizer, window, mdl), 'precision'] = precision_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'f1'] = f1_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'recall'] = recall_score(true, pred, average='weighted')
+        df.loc[(extractor, act_func, optimizer, window, mdl), 'precision'] = precision_score(true, pred, average='weighted')
         print(exp_name)
-        print(classification_report(true, pred))
+        print(classification_report(true, pred, labels=labels))
 
 
 # print(df['MobileNetV2Extractor', 'relu', 'sgd', :, 'gru1'].mean())
@@ -105,24 +105,29 @@ df.to_csv(f'../../mobilenet_output_ntu-6.csv', index=True)
 # indexes = pd.MultiIndex.from_product(hyper_params,
 #                                      names=['dataset', 'extractor', 'activation_function', 'optimizer',
 #                                             'seq_len', 'model'])
-# s_main = pd.Series(index=indexes, dtype='float64')
-# s = pd.read_csv('./saved_experiments/movenet_output_ntu-6.csv', index_col=list(range(5))).squeeze()
-# s_main["NTU-6"].update(s)
-# s = pd.read_csv('./saved_experiments/mobilenet_output_ntu-6.csv', index_col=list(range(5))).squeeze()
-# s_main["NTU-6"].update(s)
-# s = pd.read_csv('./saved_experiments/inception_output_ntu-6.csv', index_col=list(range(5))).squeeze()
-# s_main["NTU-6"].update(s)
-# s = pd.read_csv('./saved_experiments/inception_output.csv', index_col=list(range(5))).squeeze()
-# s_main["UCF-3"].update(s)
-# s = pd.read_csv('./saved_experiments/movenet_output.csv', index_col=list(range(5))).squeeze()
-# s_main["UCF-3"].update(s)
-# s = pd.read_csv('./saved_experiments/mobilenet_output.csv', index_col=list(range(5))).squeeze()
-# s_main["UCF-3"].update(s)
+# s_main = pd.DataFrame(index=indexes, columns=['accuracy', 'time', 'f1', 'recall', 'precision'], dtype='float64')
+# df = pd.read_csv('./saved_experiments/movenet_output_ntu-6.csv', index_col=list(range(5)))
+# s_main.loc['NTU-6'].loc[['MovenetExtractor']] = df
+# df = pd.read_csv('./saved_experiments/mobilenet_output_ntu-6.csv', index_col=list(range(5)))
+# s_main.loc['NTU-6'].loc[['MobileNetV2Extractor']] = df
+# df = pd.read_csv('./saved_experiments/inception_output_ntu-6.csv', index_col=list(range(5)))
+# s_main.loc['NTU-6'].loc[['InceptionExtractor']] = df
+# df = pd.read_csv('./saved_experiments/inception_output.csv', index_col=list(range(5)))
+# s_main.loc['UCF-3'].loc[['InceptionExtractor']] = df
+# df = pd.read_csv('./saved_experiments/movenet_output.csv', index_col=list(range(5)))
+# s_main.loc['UCF-3'].loc[['MovenetExtractor']] = df
+# df = pd.read_csv('./saved_experiments/mobilenet_output.csv', index_col=list(range(5)))
+# s_main.loc['UCF-3'].loc[['MobileNetV2Extractor']] = df
 #
-# for n in s_main.index.names[1:]:
-#     print(f'\n=={n}==')
+# for n in s_main.index.names:
+#     print(f'\n===={n}====')
+#     s_main.index.get_level_values(n).unique()
 #     for i in s_main.index.get_level_values(n).unique():
-#         print(i)
-#         print(s_main['NTU-6'].xs(i, level=n).mean())
-#         print(s_main['UCF-3'].xs(i, level=n).mean())
+#         print(f'==={i}===')
+#         for m in s_main.droplevel(n).index.names:
+#             # print(f'\n=={m}==')
+#             for j in s_main.droplevel(n).index.get_level_values(m).unique():
+#                 # print(j)
+#                 print(s_main.xs(i, level=n).xs(j, level=m).mean())
+#         # print('average')
 #         print(s_main.xs(i, level=n).mean())
